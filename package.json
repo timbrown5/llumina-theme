@@ -1,6 +1,6 @@
 {
   "name": "lumina-theme-generator",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Create beautiful Base24 themes for Neovim and terminals",
   "type": "module",
   "scripts": {
