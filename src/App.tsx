@@ -4,7 +4,7 @@ import Button from './components/Button.tsx';
 import Slider from './components/Slider.tsx';
 import { ColorList, ColorPalette } from './components/ColorComponents.tsx';
 import SyntaxPreview from './components/SyntaxHighlighter.tsx';
-import type { ThemeKey, FlavorKey, TabKey, Base24Colors } from './types/index.ts';
+import type { ThemeKey, FlavorKey, TabKey, Base24Colors, ThemeParams } from './types/index.ts';
 
 interface HeaderProps {
   pageColors: Base24Colors;
@@ -14,12 +14,12 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ pageColors, uiTheme, setUiTheme }) => (
   <div className="text-center mb-8">
-    <h1 
+    <h1
       className="text-4xl font-bold mb-3"
       style={{
         background: `linear-gradient(135deg, ${pageColors.base0E}, ${pageColors.base08})`,
         WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent'
+        WebkitTextFillColor: 'transparent',
       }}
     >
       ✨ Lumina Theme Generator
@@ -27,21 +27,27 @@ const Header: React.FC<HeaderProps> = ({ pageColors, uiTheme, setUiTheme }) => (
     <p style={{ color: pageColors.base04 }} className="mb-4">
       Create beautiful Base24 themes for Neovim and terminals
     </p>
-    
+
     <div className="flex items-center justify-center gap-3 mb-4">
-      <span style={{ color: pageColors.base04 }} className="text-sm">UI Theme:</span>
+      <span style={{ color: pageColors.base04 }} className="text-sm">
+        UI Theme:
+      </span>
       <select
         value={uiTheme}
         onChange={(e) => setUiTheme(e.target.value as ThemeKey)}
         style={{
           background: pageColors.base01,
           border: `1px solid ${pageColors.base02}`,
-          color: pageColors.base05
+          color: pageColors.base05,
         }}
         className="px-3 py-1 rounded text-sm cursor-pointer outline-none"
       >
         {Object.entries(THEMES).map(([key, theme]) => (
-          <option key={key} value={key} style={{ background: pageColors.base01, color: pageColors.base05 }}>
+          <option
+            key={key}
+            value={key}
+            style={{ background: pageColors.base01, color: pageColors.base05 }}
+          >
             {theme.name}
           </option>
         ))}
@@ -94,10 +100,17 @@ interface FlavorSelectorProps {
   pageColors: Base24Colors;
 }
 
-const FlavorSelector: React.FC<FlavorSelectorProps> = ({ activeTheme, flavor, switchFlavor, pageColors }) => (
+const FlavorSelector: React.FC<FlavorSelectorProps> = ({
+  activeTheme,
+  flavor,
+  switchFlavor,
+  pageColors,
+}) => (
   <div className="flex gap-3 justify-center mb-8 flex-wrap">
-    <span style={{ color: pageColors.base04 }} className="text-sm self-center">Flavor:</span>
-    {Object.keys(FLAVORS[activeTheme]).map(flavorOption => (
+    <span style={{ color: pageColors.base04 }} className="text-sm self-center">
+      Flavor:
+    </span>
+    {Object.keys(FLAVORS[activeTheme]).map((flavorOption) => (
       <Button
         key={flavorOption}
         onClick={() => switchFlavor(flavorOption as FlavorKey)}
@@ -113,35 +126,39 @@ const FlavorSelector: React.FC<FlavorSelectorProps> = ({ activeTheme, flavor, sw
 );
 
 interface CustomizePanelProps {
-  params: any;
-  updateParam: (key: string, value: number) => void;
+  params: ThemeParams;
+  updateParam: (key: keyof ThemeParams, value: number) => void;
   resetToFlavor: () => void;
   resetToTheme: () => void;
   flavor: FlavorKey;
   pageColors: Base24Colors;
 }
 
-const CustomizePanel: React.FC<CustomizePanelProps> = ({ 
-  params, 
-  updateParam, 
-  resetToFlavor, 
-  resetToTheme, 
-  flavor, 
-  pageColors 
+const CustomizePanel: React.FC<CustomizePanelProps> = ({
+  params,
+  updateParam,
+  resetToFlavor,
+  resetToTheme,
+  flavor,
+  pageColors,
 }) => (
-  <div 
+  <div
     style={{
       background: pageColors.base01,
-      border: `1px solid ${pageColors.base02}`
+      border: `1px solid ${pageColors.base02}`,
     }}
     className="rounded-xl p-5"
   >
-    <h3 style={{ color: pageColors.base0E }} className="mb-5 text-lg font-semibold">Customize Colors</h3>
-    
+    <h3 style={{ color: pageColors.base0E }} className="mb-5 text-lg font-semibold">
+      Customize Colors
+    </h3>
+
     {/* Main Colors Section */}
     <div className="mb-5">
-      <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">Main Colors</h4>
-      {SLIDER_CONFIGS.main.map(config => (
+      <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
+        Main Colors
+      </h4>
+      {SLIDER_CONFIGS.main.map((config) => (
         <Slider
           key={config.key}
           label={config.label}
@@ -155,11 +172,13 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
         />
       ))}
     </div>
-    
+
     {/* Accent Colors Section */}
     <div className="mb-5">
-      <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">Accent Colors</h4>
-      {SLIDER_CONFIGS.accent.map(config => (
+      <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
+        Accent Colors
+      </h4>
+      {SLIDER_CONFIGS.accent.map((config) => (
         <Slider
           key={config.key}
           label={config.label}
@@ -171,11 +190,13 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
         />
       ))}
     </div>
-    
+
     {/* Comments Section */}
     <div className="mb-5">
-      <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">Comments</h4>
-      {SLIDER_CONFIGS.comment.map(config => (
+      <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
+        Comments
+      </h4>
+      {SLIDER_CONFIGS.comment.map((config) => (
         <Slider
           key={config.key}
           label={config.label}
@@ -187,7 +208,7 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
         />
       ))}
     </div>
-    
+
     {/* Reset Buttons */}
     <div className="flex gap-2">
       <Button
@@ -198,7 +219,7 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
       >
         🔄 Reset to {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
       </Button>
-      
+
       <Button
         onClick={resetToTheme}
         variant="gradientRed"
@@ -221,10 +242,18 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ colors, activeTab, setActiv
   const renderPreviewContent = () => {
     if (activeTab === 'colors') {
       return (
-        <div style={{ background: colors.base00, color: colors.base05 }} className="p-4 rounded border border-white border-opacity-10">
+        <div
+          style={{ background: colors.base00, color: colors.base05 }}
+          className="p-4 rounded border border-white border-opacity-10"
+        >
           <div className="grid grid-cols-3 gap-3 mb-5">
             {Object.entries(COLOR_GROUPS).map(([groupName, colorData]) => (
-              <ColorList key={groupName} title={`${groupName.charAt(0).toUpperCase() + groupName.slice(1)} Colors`} colors={colors} colorData={colorData} />
+              <ColorList
+                key={groupName}
+                title={`${groupName.charAt(0).toUpperCase() + groupName.slice(1)} Colors`}
+                colors={colors}
+                colorData={colorData}
+              />
             ))}
           </div>
           <div className="mt-5">
@@ -236,22 +265,24 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ colors, activeTab, setActiv
         </div>
       );
     }
-    
+
     return <SyntaxPreview colors={colors} language={activeTab} />;
   };
 
   return (
-    <div 
+    <div
       style={{
         background: colors.base00,
-        border: `1px solid ${colors.base02}`
+        border: `1px solid ${colors.base02}`,
       }}
       className="rounded-xl p-5"
     >
-      <h3 style={{ color: colors.base0E }} className="mb-5 text-lg font-semibold">Preview</h3>
-      
+      <h3 style={{ color: colors.base0E }} className="mb-5 text-lg font-semibold">
+        Preview
+      </h3>
+
       <div className="flex gap-1 mb-4 border-b pb-2" style={{ borderColor: colors.base02 }}>
-        {TABS.map(tab => (
+        {TABS.map((tab) => (
           <Button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -264,7 +295,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ colors, activeTab, setActiv
           </Button>
         ))}
       </div>
-      
+
       {renderPreviewContent()}
     </div>
   );
@@ -278,21 +309,23 @@ interface ExportPanelProps {
   pageColors: Base24Colors;
 }
 
-const ExportPanel: React.FC<ExportPanelProps> = ({ 
-  exportNvimTheme, 
-  exportTheme, 
-  copyThemeParams, 
-  copied, 
-  pageColors 
+const ExportPanel: React.FC<ExportPanelProps> = ({
+  exportNvimTheme,
+  exportTheme,
+  copyThemeParams,
+  copied,
+  pageColors,
 }) => (
-  <div 
+  <div
     style={{
       background: pageColors.base01,
-      border: `1px solid ${pageColors.base02}`
+      border: `1px solid ${pageColors.base02}`,
     }}
     className="rounded-xl p-5 text-center"
   >
-    <h3 style={{ color: pageColors.base0E }} className="mb-4 text-lg font-semibold">Export Your Base24 Theme</h3>
+    <h3 style={{ color: pageColors.base0E }} className="mb-4 text-lg font-semibold">
+      Export Your Base24 Theme
+    </h3>
     <div className="flex gap-3 justify-center flex-wrap">
       <Button
         onClick={exportNvimTheme}
@@ -302,7 +335,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
       >
         🎨 Copy Neovim Theme
       </Button>
-      
+
       <Button
         onClick={exportTheme}
         variant="gradientWarm"
@@ -311,7 +344,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
       >
         📋 Copy Base24 JSON
       </Button>
-      
+
       <Button
         onClick={copyThemeParams}
         variant="gradientRed"
@@ -321,91 +354,90 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         📊 Copy Parameters
       </Button>
     </div>
-    
+
     {copied && (
-      <div 
+      <div
         style={{
           background: pageColors.base0B,
-          color: pageColors.base00
+          color: pageColors.base00,
         }}
         className="mt-3 py-2 px-4 rounded inline-block"
       >
         ✅ Copied to clipboard!
       </div>
     )}
-    
+
     <div style={{ color: pageColors.base04 }} className="mt-4 text-xs leading-relaxed">
-      <div><strong>Neovim Theme:</strong> Complete Lua theme file ready for ~/.config/nvim/</div>
-      <div><strong>Base24 JSON:</strong> Standard Base24 colors for other editors and terminals</div>
-      <div><strong>Parameters:</strong> Raw values for debugging and tweaking</div>
+      <div>
+        <strong>Neovim Theme:</strong> Complete Lua theme file ready for ~/.config/nvim/
+      </div>
+      <div>
+        <strong>Base24 JSON:</strong> Standard Base24 colors for other editors and terminals
+      </div>
+      <div>
+        <strong>Parameters:</strong> Raw values for debugging and tweaking
+      </div>
     </div>
   </div>
 );
 
 const App: React.FC = () => {
   const themeLogic = useThemeLogic();
-  
+
   return (
-    <div 
+    <div
       className="min-h-screen p-5 font-sans"
       style={{
         background: `linear-gradient(135deg, ${themeLogic.pageColors.base00}, ${themeLogic.pageColors.base01})`,
-        color: themeLogic.pageColors.base05
+        color: themeLogic.pageColors.base05,
       }}
     >
       <div className="max-w-6xl mx-auto">
-        
-        <Header 
-          pageColors={themeLogic.pageColors} 
-          uiTheme={themeLogic.uiTheme} 
-          setUiTheme={themeLogic.setUiTheme} 
+        <Header
+          pageColors={themeLogic.pageColors}
+          uiTheme={themeLogic.uiTheme}
+          setUiTheme={themeLogic.setUiTheme}
         />
-        
-        <ThemeSelector 
-          activeTheme={themeLogic.activeTheme} 
-          switchTheme={themeLogic.switchTheme} 
-          pageColors={themeLogic.pageColors} 
+
+        <ThemeSelector
+          activeTheme={themeLogic.activeTheme}
+          switchTheme={themeLogic.switchTheme}
+          pageColors={themeLogic.pageColors}
         />
-        
-        <ThemeInfo 
-          activeTheme={themeLogic.activeTheme} 
-          pageColors={themeLogic.pageColors} 
+
+        <ThemeInfo activeTheme={themeLogic.activeTheme} pageColors={themeLogic.pageColors} />
+
+        <FlavorSelector
+          activeTheme={themeLogic.activeTheme}
+          flavor={themeLogic.flavor}
+          switchFlavor={themeLogic.switchFlavor}
+          pageColors={themeLogic.pageColors}
         />
-        
-        <FlavorSelector 
-          activeTheme={themeLogic.activeTheme} 
-          flavor={themeLogic.flavor} 
-          switchFlavor={themeLogic.switchFlavor} 
-          pageColors={themeLogic.pageColors} 
-        />
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          
-          <CustomizePanel 
-            params={themeLogic.params} 
-            updateParam={themeLogic.updateParam} 
-            resetToFlavor={themeLogic.resetToFlavor} 
-            resetToTheme={themeLogic.resetToTheme} 
-            flavor={themeLogic.flavor} 
-            pageColors={themeLogic.pageColors} 
+          <CustomizePanel
+            params={themeLogic.params}
+            updateParam={themeLogic.updateParam}
+            resetToFlavor={themeLogic.resetToFlavor}
+            resetToTheme={themeLogic.resetToTheme}
+            flavor={themeLogic.flavor}
+            pageColors={themeLogic.pageColors}
           />
 
-          <PreviewPanel 
-            colors={themeLogic.colors} 
-            activeTab={themeLogic.activeTab} 
-            setActiveTab={themeLogic.setActiveTab} 
+          <PreviewPanel
+            colors={themeLogic.colors}
+            activeTab={themeLogic.activeTab}
+            setActiveTab={themeLogic.setActiveTab}
           />
-          
         </div>
-        
-        <ExportPanel 
-          exportNvimTheme={themeLogic.exportNvimTheme} 
-          exportTheme={themeLogic.exportTheme} 
-          copyThemeParams={themeLogic.copyThemeParams} 
-          copied={themeLogic.copied} 
-          pageColors={themeLogic.pageColors} 
+
+        <ExportPanel
+          exportNvimTheme={themeLogic.exportNvimTheme}
+          exportTheme={themeLogic.exportTheme}
+          copyThemeParams={themeLogic.copyThemeParams}
+          copied={themeLogic.copied}
+          pageColors={themeLogic.pageColors}
         />
-        
       </div>
     </div>
   );

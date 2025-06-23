@@ -55,7 +55,7 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
   const mutedSatDecimal = accentSatDecimal * 0.5;
   const mutedLightDecimal = isLight ? accentLightDecimal * 0.8 : accentLightDecimal * 1.1;
 
-  const colorMap: Record<string, [number, number, number]> = {
+  const colorMap: Record<keyof Base24Colors, [number, number, number]> = {
     base00: [params.bgHue, bgSatDecimal, bgLightDecimal],
     base01: [params.bgHue, bgSatDecimal + 0.08, bgLightDecimal + (isLight ? -0.06 : 0.06)],
     base02: [params.bgHue, bgSatDecimal + 0.16, bgLightDecimal + (isLight ? -0.12 : 0.15)],
@@ -64,16 +64,30 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
     base05: [240, 0.15, isLight ? 0.25 : 0.85],
     base06: [240, 0.12, isLight ? 0.18 : 0.9],
     base07: [240, 0.1, isLight ? 0.12 : 0.95],
+    base08: [355, accentSatDecimal, accentLightDecimal],
+    base09: [25, accentSatDecimal, accentLightDecimal],
+    base0A: [50, accentSatDecimal, accentLightDecimal],
+    base0B: [115, accentSatDecimal, accentLightDecimal],
+    base0C: [185, accentSatDecimal, accentLightDecimal],
+    base0D: [220, accentSatDecimal, accentLightDecimal],
+    base0E: [275, accentSatDecimal, accentLightDecimal],
+    base0F: [5, accentSatDecimal, accentLightDecimal],
+    base10: [355, mutedSatDecimal, mutedLightDecimal],
+    base11: [25, mutedSatDecimal, mutedLightDecimal],
+    base12: [50, mutedSatDecimal, mutedLightDecimal],
+    base13: [115, mutedSatDecimal, mutedLightDecimal],
+    base14: [185, mutedSatDecimal, mutedLightDecimal],
+    base15: [220, mutedSatDecimal, mutedLightDecimal],
+    base16: [275, mutedSatDecimal, mutedLightDecimal],
+    base17: [5, mutedSatDecimal, mutedLightDecimal],
   };
 
-  // Generate accent colors
-  [355, 25, 50, 115, 185, 220, 275, 5].forEach((hue, i) => {
-    const key = `base0${(8 + i).toString(16).toUpperCase()}`;
-    colorMap[key] = [hue, accentSatDecimal, accentLightDecimal];
-    colorMap[`base1${i.toString(16).toUpperCase()}`] = [hue, mutedSatDecimal, mutedLightDecimal];
+  const result: Base24Colors = {} as Base24Colors;
+
+  (Object.keys(colorMap) as Array<keyof Base24Colors>).forEach((key) => {
+    const [h, s, l] = colorMap[key];
+    result[key] = okhslToRgb(h, s, l);
   });
 
-  return Object.fromEntries(
-    Object.entries(colorMap).map(([key, [h, s, l]]) => [key, okhslToRgb(h, s, l)])
-  ) as Base24Colors;
+  return result;
 };
