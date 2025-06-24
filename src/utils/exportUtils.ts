@@ -119,34 +119,36 @@ export const createThemeParams = (
   params: ThemeParams,
   colors: Base24Colors
 ): string => {
-  // Load the current themeData.json structure and update with current parameters
-  const themeData = {
-    midnight: RAW_THEME_DATA.midnight,
-    twilight: RAW_THEME_DATA.twilight,
-    dawn: RAW_THEME_DATA.dawn,
-    noon: RAW_THEME_DATA.noon,
+  // Create a mutable copy of the theme data with proper typing
+  const themeData: Record<string, any> = {
+    midnight: { ...RAW_THEME_DATA.midnight },
+    twilight: { ...RAW_THEME_DATA.twilight },
+    dawn: { ...RAW_THEME_DATA.dawn },
+    noon: { ...RAW_THEME_DATA.noon },
   };
 
   // Update the active theme with current parameters
-  themeData[activeTheme] = {
-    ...themeData[activeTheme],
-    bgHue: params.bgHue,
-    bgSat: params.bgSat,
-    bgLight: params.bgLight,
-    accentHue: params.accentHue,
-    accentSat: params.accentSat,
-    accentLight: params.accentLight,
-    commentLight: params.commentLight,
-    flavors: {
-      ...themeData[activeTheme].flavors,
-      [flavor]: {
+  const currentTheme = themeData[activeTheme];
+  if (currentTheme) {
+    // Update base theme parameters
+    currentTheme.bgHue = params.bgHue;
+    currentTheme.bgSat = params.bgSat;
+    currentTheme.bgLight = params.bgLight;
+    currentTheme.accentHue = params.accentHue;
+    currentTheme.accentSat = params.accentSat;
+    currentTheme.accentLight = params.accentLight;
+    currentTheme.commentLight = params.commentLight;
+
+    // Update flavor parameters
+    if (currentTheme.flavors && currentTheme.flavors[flavor]) {
+      currentTheme.flavors[flavor] = {
         accentHue: params.accentHue,
         accentSat: params.accentSat,
         accentLight: params.accentLight,
         commentLight: params.commentLight,
-      },
-    },
-  };
+      };
+    }
+  }
 
   return JSON.stringify(themeData, null, 2);
 };
