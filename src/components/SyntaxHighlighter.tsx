@@ -147,10 +147,10 @@ class DataProcessor:
         """Process a batch of data with filtering and validation."""
         df = pd.DataFrame(data)
         filtered = df[df['score'] > self.threshold]
-        
+
         if self.debug:
             print(f"Filtered {len(filtered)} rows from {len(df)}")
-        
+
         return filtered`,
 
   cpp: `// C++ - Generic Container with Smart Pointers
@@ -166,7 +166,7 @@ private:
     size_t capacity_;
 
 public:
-    DataContainer(size_t initial_capacity = 10) 
+    DataContainer(size_t initial_capacity = 10)
         : capacity_(initial_capacity) {
         data_.reserve(capacity_);
     }
@@ -174,7 +174,7 @@ public:
     void emplace(T&& item) {
         data_.push_back(std::make_unique<T>(std::move(item)));
     }
-    
+
     size_t size() const { return data_.size(); }
 };`,
 

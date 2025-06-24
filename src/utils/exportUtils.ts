@@ -18,7 +18,7 @@ local theme = {
   Normal = { fg = colors.base05, bg = colors.base00 },
   NormalFloat = { fg = colors.base05, bg = colors.base01 },
   Comment = { fg = colors.base03, italic = true },
-  
+
   -- Constants
   Constant = { fg = colors.base09 },
   String = { fg = colors.base0B },
@@ -26,11 +26,11 @@ local theme = {
   Number = { fg = colors.base09 },
   Boolean = { fg = colors.base09 },
   Float = { fg = colors.base09 },
-  
-  -- Identifiers  
+
+  -- Identifiers
   Identifier = { fg = colors.base08 },
   Function = { fg = colors.base0D },
-  
+
   -- Statements
   Statement = { fg = colors.base0E },
   Conditional = { fg = colors.base0E },
@@ -39,20 +39,20 @@ local theme = {
   Operator = { fg = colors.base05 },
   Keyword = { fg = colors.base0E, bold = true },
   Exception = { fg = colors.base08 },
-  
+
   -- PreProcessor
   PreProc = { fg = colors.base0A },
   Include = { fg = colors.base0D },
   Define = { fg = colors.base0E },
   Macro = { fg = colors.base08 },
   PreCondit = { fg = colors.base0A },
-  
+
   -- Types
   Type = { fg = colors.base0A },
   StorageClass = { fg = colors.base0A },
   Structure = { fg = colors.base0E },
   Typedef = { fg = colors.base0A },
-  
+
   -- Special
   Special = { fg = colors.base0C },
   SpecialChar = { fg = colors.base0F },
@@ -60,7 +60,7 @@ local theme = {
   Delimiter = { fg = colors.base0F },
   SpecialComment = { fg = colors.base0C },
   Debug = { fg = colors.base08 },
-  
+
   -- UI Elements
   CursorLine = { bg = colors.base01 },
   CursorColumn = { bg = colors.base01 },
@@ -72,22 +72,22 @@ local theme = {
   LineNr = { fg = colors.base03 },
   CursorLineNr = { fg = colors.base0A },
   MatchParen = { fg = colors.base00, bg = colors.base03 },
-  
+
   StatusLine = { fg = colors.base04, bg = colors.base02 },
   StatusLineNC = { fg = colors.base03, bg = colors.base01 },
-  
+
   -- Messages
   ErrorMsg = { fg = colors.base08 },
   WarningMsg = { fg = colors.base09 },
   MoreMsg = { fg = colors.base0B },
   Question = { fg = colors.base0D },
-  
+
   -- Diffs
   DiffAdd = { fg = colors.base0B, bg = colors.base00 },
   DiffChange = { fg = colors.base0A, bg = colors.base00 },
   DiffDelete = { fg = colors.base08, bg = colors.base00 },
   DiffText = { fg = colors.base0D, bg = colors.base00 },
-  
+
   -- Spelling
   SpellBad = { undercurl = true, sp = colors.base08 },
   SpellCap = { undercurl = true, sp = colors.base0D },

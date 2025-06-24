@@ -33,22 +33,15 @@ const Slider: React.FC<SliderProps> = ({
   const getSliderBackground = (): string => {
     if (type === 'hue') {
       const hueStops = Array.from({ length: 13 }, (_, i) =>
-        okhslToRgb(min + ((max - min) * i) / 12, 0.8, 0.6),
+        okhslToRgb(min + ((max - min) * i) / 12, 0.8, 0.6)
       );
       return createGradientBg(hueStops);
     }
     if (type === 'saturation') {
-      return createGradientBg([
-        '#808080',
-        okhslToRgb(currentHue || 240, 1.0, 0.5),
-      ]);
+      return createGradientBg(['#808080', okhslToRgb(currentHue || 240, 1.0, 0.5)]);
     }
     if (type === 'lightness') {
-      const midColor = okhslToRgb(
-        currentHue || 240,
-        (currentSat || 50) / 100,
-        0.5,
-      );
+      const midColor = okhslToRgb(currentHue || 240, (currentSat || 50) / 100, 0.5);
       return createGradientBg(['#000000', midColor, '#ffffff']);
     }
     return '#4a5568';
@@ -92,9 +85,7 @@ const Slider: React.FC<SliderProps> = ({
             onBlur={handleInputBlur}
             className="bg-black bg-opacity-10 border border-white border-opacity-20 text-white px-2 py-1 rounded text-xs w-16 text-right outline-none"
           />
-          <span className="text-xs opacity-70 min-w-4">
-            {type === 'hue' ? '°' : '%'}
-          </span>
+          <span className="text-xs opacity-70 min-w-4">{type === 'hue' ? '°' : '%'}</span>
         </div>
       </div>
       <input

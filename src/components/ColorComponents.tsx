@@ -6,11 +6,7 @@ interface ColorListProps {
   colorData: ColorGroup[];
 }
 
-export const ColorList: React.FC<ColorListProps> = ({
-  title,
-  colors,
-  colorData,
-}) => (
+export const ColorList: React.FC<ColorListProps> = ({ title, colors, colorData }) => (
   <div>
     <h5 style={{ color: colors.base04 }} className="text-xs text-center mb-2">
       {title}
@@ -32,10 +28,7 @@ interface ColorPaletteProps {
   colorKeys: string[];
 }
 
-export const ColorPalette: React.FC<ColorPaletteProps> = ({
-  colors,
-  colorKeys,
-}) => (
+export const ColorPalette: React.FC<ColorPaletteProps> = ({ colors, colorKeys }) => (
   <div className="flex gap-1 mb-1">
     {colorKeys.map((colorKey) => (
       <div

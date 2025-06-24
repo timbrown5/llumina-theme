@@ -2,12 +2,7 @@ import type { Base24Colors } from '../types/index.ts';
 
 interface ButtonProps {
   onClick: () => void;
-  variant?:
-    | 'primary'
-    | 'secondary'
-    | 'gradient'
-    | 'gradientWarm'
-    | 'gradientRed';
+  variant?: 'primary' | 'secondary' | 'gradient' | 'gradientWarm' | 'gradientRed';
   active?: boolean;
   children: React.ReactNode;
   colors: Base24Colors;
@@ -36,10 +31,7 @@ const Button: React.FC<ButtonProps> = ({
       style={{
         background: variants[variant],
         border: `1px solid ${active ? (variant === 'primary' ? colors.base0D : colors.base0A) : colors.base02}`,
-        color:
-          variant.includes('gradient') || active
-            ? colors.base00
-            : colors.base05,
+        color: variant.includes('gradient') || active ? colors.base00 : colors.base05,
       }}
       className={`px-4 py-2 rounded cursor-pointer font-medium transition-all duration-200 ${className}`}
     >
