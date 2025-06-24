@@ -1,0 +1,282 @@
+import type { Base24Colors } from '../types/index.ts';
+
+interface UIPreviewProps {
+  colors: Base24Colors;
+}
+
+const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
+  return (
+    <div
+      style={{
+        background: colors.base00,
+        color: colors.base05,
+        border: `1px solid ${colors.base02}`,
+      }}
+      className="rounded-lg p-4 space-y-4"
+    >
+      <h4 className="text-sm font-semibold mb-4" style={{ color: colors.base0E }}>
+        🖥️ UI Elements Preview
+      </h4>
+
+      {/* Mock Editor Interface */}
+      <div
+        style={{
+          background: colors.base01,
+          border: `1px solid ${colors.base02}`,
+        }}
+        className="rounded border p-3 space-y-3"
+      >
+        <div className="text-xs font-medium mb-2" style={{ color: colors.base04 }}>
+          Code Editor
+        </div>
+
+        {/* Editor Tabs */}
+        <div className="flex gap-1 mb-2">
+          <div
+            style={{
+              background: colors.base02,
+              color: colors.base05,
+            }}
+            className="px-3 py-1 rounded-t text-xs"
+          >
+            main.js
+          </div>
+          <div
+            style={{
+              background: colors.base01,
+              color: colors.base04,
+            }}
+            className="px-3 py-1 rounded-t text-xs"
+          >
+            utils.ts
+          </div>
+        </div>
+
+        {/* Code Content */}
+        <div
+          style={{ background: colors.base00 }}
+          className="rounded p-2 text-xs font-mono leading-relaxed"
+        >
+          <div>
+            <span style={{ color: colors.base03 }}>// Function to calculate theme colors</span>
+          </div>
+          <div>
+            <span style={{ color: colors.base0E }}>function</span>{' '}
+            <span style={{ color: colors.base0D }}>generateTheme</span>
+            <span style={{ color: colors.base05 }}>(</span>
+            <span style={{ color: colors.base08 }}>params</span>
+            <span style={{ color: colors.base05 }}>: </span>
+            <span style={{ color: colors.base0A }}>ThemeParams</span>
+            <span style={{ color: colors.base05 }}>
+              {')'} {'{'}
+            </span>
+          </div>
+          <div>
+            {'  '}
+            <span style={{ color: colors.base0E }}>const</span>{' '}
+            <span style={{ color: colors.base08 }}>colors</span>{' '}
+            <span style={{ color: colors.base05 }}>=</span>{' '}
+            <span style={{ color: colors.base0B }}>"#ff5733"</span>
+            <span style={{ color: colors.base05 }}>;</span>
+          </div>
+          <div>
+            {'  '}
+            <span style={{ color: colors.base0E }}>return</span>{' '}
+            <span style={{ color: colors.base08 }}>colors</span>
+            <span style={{ color: colors.base05 }}>;</span>
+          </div>
+          <div>
+            <span style={{ color: colors.base05 }}>{'}'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Mock Terminal */}
+      <div
+        style={{
+          background: colors.base00,
+          border: `1px solid ${colors.base02}`,
+        }}
+        className="rounded p-3"
+      >
+        <div className="text-xs font-medium mb-2" style={{ color: colors.base04 }}>
+          Terminal
+        </div>
+        <div className="text-xs font-mono space-y-1">
+          <div>
+            <span style={{ color: colors.base0B }}>user@machine</span>
+            <span style={{ color: colors.base05 }}>:</span>
+            <span style={{ color: colors.base0D }}>~/project</span>
+            <span style={{ color: colors.base05 }}>$ </span>
+            <span style={{ color: colors.base05 }}>npm run build</span>
+          </div>
+          <div style={{ color: colors.base0A }}>Building application...</div>
+          <div style={{ color: colors.base0B }}>✓ Build successful</div>
+          <div style={{ color: colors.base08 }}>⚠ 2 warnings found</div>
+        </div>
+      </div>
+
+      {/* UI Controls */}
+      <div className="space-y-3">
+        <div className="text-xs font-medium" style={{ color: colors.base04 }}>
+          Interface Elements
+        </div>
+
+        {/* Buttons */}
+        <div className="flex gap-2 flex-wrap">
+          <button
+            style={{
+              background: colors.base0D,
+              color: colors.base00,
+            }}
+            className="px-3 py-1 rounded text-xs font-medium"
+          >
+            Primary
+          </button>
+          <button
+            style={{
+              background: colors.base02,
+              color: colors.base05,
+              border: `1px solid ${colors.base03}`,
+            }}
+            className="px-3 py-1 rounded text-xs"
+          >
+            Secondary
+          </button>
+          <button
+            style={{
+              background: colors.base08,
+              color: colors.base00,
+            }}
+            className="px-3 py-1 rounded text-xs"
+          >
+            Danger
+          </button>
+          <button
+            style={{
+              background: colors.base0B,
+              color: colors.base00,
+            }}
+            className="px-3 py-1 rounded text-xs"
+          >
+            Success
+          </button>
+        </div>
+
+        {/* Form Elements */}
+        <div className="space-y-2">
+          <input
+            type="text"
+            placeholder="Enter text..."
+            style={{
+              background: colors.base01,
+              border: `1px solid ${colors.base02}`,
+              color: colors.base05,
+            }}
+            className="w-full px-2 py-1 rounded text-xs outline-none"
+          />
+          <div className="flex items-center gap-2">
+            <input type="checkbox" style={{ accentColor: colors.base0D }} className="text-xs" />
+            <span className="text-xs" style={{ color: colors.base05 }}>
+              Enable notifications
+            </span>
+          </div>
+        </div>
+
+        {/* Status Indicators */}
+        <div className="flex gap-4 text-xs">
+          <div className="flex items-center gap-1">
+            <div style={{ background: colors.base0B }} className="w-2 h-2 rounded-full" />
+            <span style={{ color: colors.base05 }}>Online</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div style={{ background: colors.base0A }} className="w-2 h-2 rounded-full" />
+            <span style={{ color: colors.base05 }}>Warning</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div style={{ background: colors.base08 }} className="w-2 h-2 rounded-full" />
+            <span style={{ color: colors.base05 }}>Error</span>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="space-y-1">
+          <div className="text-xs" style={{ color: colors.base04 }}>
+            Loading Progress
+          </div>
+          <div
+            style={{ background: colors.base02 }}
+            className="w-full h-2 rounded-full overflow-hidden"
+          >
+            <div
+              className="h-full rounded-full"
+              style={{ width: '65%', background: colors.base0D }}
+            />
+          </div>
+        </div>
+
+        {/* Notification */}
+        <div
+          style={{
+            background: colors.base01,
+            border: `1px solid ${colors.base0B}`,
+            borderLeft: `4px solid ${colors.base0B}`,
+          }}
+          className="p-2 rounded"
+        >
+          <div className="text-xs font-medium" style={{ color: colors.base0B }}>
+            Success
+          </div>
+          <div className="text-xs" style={{ color: colors.base05 }}>
+            Theme applied successfully!
+          </div>
+        </div>
+
+        {/* Warning Alert */}
+        <div
+          style={{
+            background: colors.base01,
+            border: `1px solid ${colors.base0A}`,
+            borderLeft: `4px solid ${colors.base0A}`,
+          }}
+          className="p-2 rounded"
+        >
+          <div className="text-xs font-medium" style={{ color: colors.base0A }}>
+            Warning
+          </div>
+          <div className="text-xs" style={{ color: colors.base05 }}>
+            Some settings may need manual adjustment.
+          </div>
+        </div>
+      </div>
+
+      {/* Color Palette Quick Reference */}
+      <div className="pt-2 border-t" style={{ borderColor: colors.base02 }}>
+        <div className="text-xs font-medium mb-2" style={{ color: colors.base04 }}>
+          Color Palette
+        </div>
+        <div className="grid grid-cols-8 gap-1">
+          {[
+            colors.base08,
+            colors.base09,
+            colors.base0A,
+            colors.base0B,
+            colors.base0C,
+            colors.base0D,
+            colors.base0E,
+            colors.base0F,
+          ].map((color, i) => (
+            <div
+              key={i}
+              style={{ backgroundColor: color }}
+              className="w-6 h-6 rounded border border-white border-opacity-20"
+              title={`base0${(8 + i).toString(16).toUpperCase()}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default UIPreview;

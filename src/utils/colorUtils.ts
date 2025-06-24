@@ -45,6 +45,44 @@ export const okhslToRgb = (h: number, s: number, l: number): string => {
 export const createGradientBg = (colors: string[]): string =>
   `linear-gradient(90deg, ${colors.join(', ')})`;
 
+// Slider helper functions
+export const generateHueGradient = (steps: number = 25): string[] => {
+  return Array.from({ length: steps }, (_, i) => {
+    const hueValue = (360 * i) / (steps - 1);
+    return okhslToRgb(hueValue, 0.8, 0.6);
+  });
+};
+
+export const generateAccentHueGradient = (
+  baseHue: number,
+  minAdjustment: number,
+  maxAdjustment: number,
+  steps: number = 25
+): string[] => {
+  return Array.from({ length: steps }, (_, i) => {
+    const adjustmentValue = minAdjustment + ((maxAdjustment - minAdjustment) * i) / (steps - 1);
+    const finalHue = (baseHue + adjustmentValue + 360) % 360;
+    return okhslToRgb(finalHue, 0.8, 0.6);
+  });
+};
+
+export const generateSaturationGradient = (hue: number): string[] => {
+  return [
+    '#808080', // Gray (0% saturation)
+    okhslToRgb(hue, 1.0, 0.5), // Full saturation
+  ];
+};
+
+export const generateLightnessGradient = (hue: number, saturation: number): string[] => {
+  const satDecimal = saturation / 100;
+  const midColor = okhslToRgb(hue, satDecimal, 0.5);
+  return [
+    '#000000', // Black (0% lightness)
+    midColor, // Mid lightness with current hue/sat
+    '#ffffff', // White (100% lightness)
+  ];
+};
+
 const normalizeHue = (hue: number): number => ((hue % 360) + 360) % 360;
 
 const createAccentHues = (baseHue: number): number[] => {

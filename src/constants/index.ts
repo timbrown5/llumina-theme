@@ -40,7 +40,7 @@ const themeData = {
     inspirations: 'Fading light, peaceful evenings, blue hour, tranquility, rest',
     bgHue: 242,
     bgSat: 40,
-    bgLight: 16,
+    bgLight: 12,
     accentHue: 0,
     accentSat: 85,
     accentLight: 68,
@@ -93,7 +93,7 @@ const themeData = {
       'high-contrast': {
         accentHue: 0,
         accentSat: 85,
-        accentLight: 55,
+        accentLight: 50,
         commentLight: 50,
       },
     },
@@ -103,12 +103,12 @@ const themeData = {
     tagline: 'Golden sunshine and natural warmth',
     inspirations: 'Warm days, good times, beach afternoons, lazy picnics, contentment, comfort',
     bgHue: 45,
-    bgSat: 20,
-    bgLight: 95,
+    bgSat: 25,
+    bgLight: 96,
     accentHue: 0,
-    accentSat: 65,
-    accentLight: 40,
-    commentLight: 50,
+    accentSat: 90,
+    accentLight: 45,
+    commentLight: 40,
     flavors: {
       pastel: {
         accentHue: 0,
@@ -124,8 +124,8 @@ const themeData = {
       },
       'high-contrast': {
         accentHue: 0,
-        accentSat: 70,
-        accentLight: 30,
+        accentSat: 90,
+        accentLight: 45,
         commentLight: 40,
       },
     },
@@ -213,6 +213,7 @@ export const COLOR_GROUPS: Record<string, ColorGroup[]> = {
 
 export const TABS: Tab[] = [
   { id: 'colors', label: 'Colors' },
+  { id: 'ui-preview', label: 'UI Preview' },
   { id: 'javascript', label: 'JavaScript' },
   { id: 'python', label: 'Python' },
   { id: 'cpp', label: 'C++' },
@@ -221,12 +222,12 @@ export const TABS: Tab[] = [
 
 export const SLIDER_CONFIGS: Record<string, SliderConfig[]> = {
   main: [
-    { label: 'Background Hue', key: 'bgHue', min: -180, max: 180, type: 'hue' },
+    { label: 'Background Hue', key: 'bgHue', min: 0, max: 360, type: 'hue' },
     { label: 'Background Saturation', key: 'bgSat', min: 0, max: 100, type: 'saturation' },
     { label: 'Background Lightness', key: 'bgLight', min: 0, max: 100, type: 'lightness' },
   ],
   accent: [
-    { label: 'Accent Hue Shift', key: 'accentHue', min: -180, max: 180, type: 'hue' },
+    { label: 'Accent Hue Adjustment', key: 'accentHue', min: -180, max: 180, type: 'hue' },
     { label: 'Accent Saturation', key: 'accentSat', min: 0, max: 100, type: 'saturation' },
     { label: 'Accent Lightness', key: 'accentLight', min: 0, max: 100, type: 'lightness' },
   ],

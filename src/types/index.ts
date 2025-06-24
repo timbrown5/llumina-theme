@@ -50,7 +50,7 @@ export interface Base24Colors {
 
 export type ThemeKey = 'midnight' | 'twilight' | 'dawn' | 'noon';
 export type FlavorKey = 'pastel' | 'normal' | 'high-contrast';
-export type TabKey = 'colors' | 'javascript' | 'python' | 'cpp' | 'terminal';
+export type TabKey = 'colors' | 'ui-preview' | 'javascript' | 'python' | 'cpp' | 'terminal';
 export type SliderType = 'hue' | 'saturation' | 'lightness';
 
 export interface ColorGroup {
@@ -100,5 +100,6 @@ export interface ThemeLogic {
   setUiTheme: (theme: ThemeKey) => void;
   exportNvimTheme: () => void;
   exportTheme: () => void;
+  exportStylixTheme: () => void;
   copyThemeParams: () => void;
 }

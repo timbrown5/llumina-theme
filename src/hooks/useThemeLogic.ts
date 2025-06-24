@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { THEMES, FLAVORS } from '../constants/index.ts';
 import { generateColors } from '../utils/colorUtils.ts';
-import { createNvimTheme, createBase24Json, createThemeParams } from '../utils/exportUtils.ts';
+import {
+  createNvimTheme,
+  createBase24Json,
+  createThemeParams,
+  createStylixTheme,
+} from '../utils/exportUtils.ts';
 import type { ThemeKey, FlavorKey, TabKey, ThemeParams, ThemeLogic } from '../types/index.ts';
 
 const STORAGE_KEY = 'lumina-theme-settings';
@@ -63,12 +68,25 @@ export const useThemeLogic = (): ThemeLogic => {
   }, [activeTheme, flavor, storedSettings]);
 
   const colors = generateColors(params);
-  const pageColors = generateColors({
-    ...THEMES[uiTheme],
-    accentSat: 85,
-    accentLight: 70,
-    commentLight: 60,
-  });
+
+  // Generate UI page colors - if UI theme matches active theme, use current params
+  // Otherwise use the base theme data with selected flavor
+  let pageColors;
+  if (uiTheme === activeTheme) {
+    // Same theme - use exact same parameters for perfect match
+    pageColors = generateColors(params);
+  } else {
+    // Different theme - use base theme data with current flavor
+    const uiFlavorData = FLAVORS[uiTheme]?.[flavor] || FLAVORS[uiTheme].normal;
+    const [uiAccentHue, uiAccentSat, uiAccentLight, uiCommentLight] = uiFlavorData;
+    pageColors = generateColors({
+      ...THEMES[uiTheme],
+      accentHue: uiAccentHue,
+      accentSat: uiAccentSat,
+      accentLight: uiAccentLight,
+      commentLight: uiCommentLight,
+    });
+  }
 
   const updateParam = (key: keyof ThemeParams, value: number) => {
     const newParams = { ...params, [key]: value };
@@ -129,6 +147,8 @@ export const useThemeLogic = (): ThemeLogic => {
   const exportNvimTheme = () =>
     copyToClipboard(createNvimTheme(colors, THEMES[activeTheme].name, flavor));
   const exportTheme = () => copyToClipboard(createBase24Json(colors, THEMES[activeTheme].name));
+  const exportStylixTheme = () =>
+    copyToClipboard(createStylixTheme(colors, THEMES[activeTheme].name, flavor));
   const copyThemeParams = () =>
     copyToClipboard(createThemeParams(activeTheme, flavor, params, colors));
 
@@ -150,6 +170,7 @@ export const useThemeLogic = (): ThemeLogic => {
     setUiTheme,
     exportNvimTheme,
     exportTheme,
+    exportStylixTheme,
     copyThemeParams,
   };
 };

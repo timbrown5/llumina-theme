@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { okhslToRgb, createGradientBg } from '../utils/colorUtils.ts';
+import { createGradientBg } from '../utils/colorUtils.ts';
 import type { SliderType } from '../types/index.ts';
 
 interface SliderProps {
@@ -9,8 +9,9 @@ interface SliderProps {
   max: number;
   onChange: (value: number) => void;
   type: SliderType;
-  currentHue?: number;
-  currentSat?: number;
+  gradientColors: string[];
+  previewColor?: string;
+  previewLabel?: string;
 }
 
 const Slider: React.FC<SliderProps> = ({
@@ -20,8 +21,9 @@ const Slider: React.FC<SliderProps> = ({
   max,
   onChange,
   type,
-  currentHue,
-  currentSat,
+  gradientColors,
+  previewColor,
+  previewLabel,
 }) => {
   const [inputValue, setInputValue] = useState<string>(value.toString());
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
@@ -29,23 +31,6 @@ const Slider: React.FC<SliderProps> = ({
   useEffect(() => {
     if (!isInputFocused) setInputValue(value.toString());
   }, [value, isInputFocused]);
-
-  const getSliderBackground = (): string => {
-    if (type === 'hue') {
-      const hueStops = Array.from({ length: 13 }, (_, i) =>
-        okhslToRgb(min + ((max - min) * i) / 12, 0.8, 0.6)
-      );
-      return createGradientBg(hueStops);
-    }
-    if (type === 'saturation') {
-      return createGradientBg(['#808080', okhslToRgb(currentHue || 240, 1.0, 0.5)]);
-    }
-    if (type === 'lightness') {
-      const midColor = okhslToRgb(currentHue || 240, (currentSat || 50) / 100, 0.5);
-      return createGradientBg(['#000000', midColor, '#ffffff']);
-    }
-    return '#4a5568';
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newInputValue = e.target.value;
@@ -70,6 +55,11 @@ const Slider: React.FC<SliderProps> = ({
     onChange(parseInt(e.target.value));
   };
 
+  // Format the unit display
+  const getUnit = () => {
+    return type === 'hue' ? '°' : '%';
+  };
+
   return (
     <div className="my-3">
       <div className="flex justify-between items-center mb-1">
@@ -85,18 +75,57 @@ const Slider: React.FC<SliderProps> = ({
             onBlur={handleInputBlur}
             className="bg-black bg-opacity-10 border border-white border-opacity-20 text-white px-2 py-1 rounded text-xs w-16 text-right outline-none"
           />
-          <span className="text-xs opacity-70 min-w-4">{type === 'hue' ? '°' : '%'}</span>
+          <span className="text-xs opacity-70 min-w-4">{getUnit()}</span>
         </div>
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={value}
-        onChange={handleRangeChange}
-        style={{ background: getSliderBackground() }}
-        className="w-full h-2 rounded cursor-pointer outline-none"
-      />
+      <div className="relative">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={value}
+          onChange={handleRangeChange}
+          className="w-full h-4 rounded cursor-pointer outline-none appearance-none"
+          style={{
+            background: createGradientBg(gradientColors),
+            WebkitAppearance: 'none',
+          }}
+        />
+        {/* Custom slider thumb styling */}
+        <style>{`
+          input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid #333333;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          }
+
+          input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid #333333;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          }
+        `}</style>
+      </div>
+
+      {/* Show current color preview if provided */}
+      {previewColor && (
+        <div className="flex items-center gap-2 mt-1">
+          <div
+            className="w-4 h-4 rounded border border-white border-opacity-30"
+            style={{ backgroundColor: previewColor }}
+          />
+          {previewLabel && <span className="text-xs opacity-70">{previewLabel}</span>}
+        </div>
+      )}
     </div>
   );
 };
