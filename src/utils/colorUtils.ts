@@ -53,12 +53,12 @@ const createAccentHues = (baseHue: number): number[] => {
   return [
     normalizeHue(base), // red
     normalizeHue(base + 30), // orange
-    normalizeHue(base + 60), // yelow
-    normalizeHue(base + 150), // green
-    normalizeHue(base + 180), // teal/cyan
+    normalizeHue(base + 60), // yellow
+    normalizeHue(base + 120), // green
+    normalizeHue(base + 165), // teal/cyan
     normalizeHue(base + 210), // blue
-    normalizeHue(base + 300), // purple
-    normalizeHue(base + 330), // brown?
+    normalizeHue(base + 270), // purple (changed from 300° to 270° - more blue-purple)
+    normalizeHue(base + 330), // pink (changed from 320° to 330° - more red-pink)
   ];
 };
 

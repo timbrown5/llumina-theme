@@ -1,4 +1,4 @@
-import { THEMES, FLAVORS } from '../constants/index.ts';
+import { RAW_THEME_DATA } from '../constants/index.ts';
 import type { Base24Colors, ThemeParams, ThemeKey, FlavorKey } from '../types/index.ts';
 
 export const createNvimTheme = (
@@ -19,36 +19,49 @@ local theme = {
   NormalFloat = { fg = colors.base05, bg = colors.base01 },
   Comment = { fg = colors.base03, italic = true },
   
-  Keyword = { fg = colors.base0E, bold = true },
+  -- Constants
+  Constant = { fg = colors.base09 },
   String = { fg = colors.base0B },
   Character = { fg = colors.base0B },
   Number = { fg = colors.base09 },
   Boolean = { fg = colors.base09 },
   Float = { fg = colors.base09 },
-  Function = { fg = colors.base0D },
+  
+  -- Identifiers  
   Identifier = { fg = colors.base08 },
+  Function = { fg = colors.base0D },
+  
+  -- Statements
   Statement = { fg = colors.base0E },
   Conditional = { fg = colors.base0E },
   Repeat = { fg = colors.base0E },
   Label = { fg = colors.base0A },
   Operator = { fg = colors.base05 },
+  Keyword = { fg = colors.base0E, bold = true },
   Exception = { fg = colors.base08 },
+  
+  -- PreProcessor
   PreProc = { fg = colors.base0A },
   Include = { fg = colors.base0D },
   Define = { fg = colors.base0E },
   Macro = { fg = colors.base08 },
+  PreCondit = { fg = colors.base0A },
+  
+  -- Types
   Type = { fg = colors.base0A },
   StorageClass = { fg = colors.base0A },
   Structure = { fg = colors.base0E },
   Typedef = { fg = colors.base0A },
+  
+  -- Special
   Special = { fg = colors.base0C },
   SpecialChar = { fg = colors.base0F },
   Tag = { fg = colors.base0A },
   Delimiter = { fg = colors.base0F },
   SpecialComment = { fg = colors.base0C },
   Debug = { fg = colors.base08 },
-  Constant = { fg = colors.base09 },
   
+  -- UI Elements
   CursorLine = { bg = colors.base01 },
   CursorColumn = { bg = colors.base01 },
   ColorColumn = { bg = colors.base01 },
@@ -56,23 +69,26 @@ local theme = {
   VisualNOS = { bg = colors.base02 },
   Search = { fg = colors.base00, bg = colors.base0A },
   IncSearch = { fg = colors.base01, bg = colors.base09 },
-  LineNr = { fg = colors.base04 },
+  LineNr = { fg = colors.base03 },
   CursorLineNr = { fg = colors.base0A },
   MatchParen = { fg = colors.base00, bg = colors.base03 },
   
   StatusLine = { fg = colors.base04, bg = colors.base02 },
   StatusLineNC = { fg = colors.base03, bg = colors.base01 },
   
+  -- Messages
   ErrorMsg = { fg = colors.base08 },
   WarningMsg = { fg = colors.base09 },
   MoreMsg = { fg = colors.base0B },
   Question = { fg = colors.base0D },
   
+  -- Diffs
   DiffAdd = { fg = colors.base0B, bg = colors.base00 },
   DiffChange = { fg = colors.base0A, bg = colors.base00 },
   DiffDelete = { fg = colors.base08, bg = colors.base00 },
   DiffText = { fg = colors.base0D, bg = colors.base00 },
   
+  -- Spelling
   SpellBad = { undercurl = true, sp = colors.base08 },
   SpellCap = { undercurl = true, sp = colors.base0D },
   SpellLocal = { undercurl = true, sp = colors.base0C },
@@ -103,72 +119,34 @@ export const createThemeParams = (
   params: ThemeParams,
   colors: Base24Colors
 ): string => {
-  // Get all theme base parameters
-  const allThemeParams = Object.entries(THEMES).reduce(
-    (acc, [themeKey, theme]) => {
-      acc[themeKey] = {
-        bgHue: theme.bgHue,
-        bgSat: theme.bgSat,
-        bgLight: theme.bgLight,
-        accentHue: theme.accentHue,
-        accentSat: theme.accentSat,
-        accentLight: theme.accentLight,
-        commentLight: theme.commentLight,
-      };
-      return acc;
-    },
-    {} as Record<string, ThemeParams>
-  );
+  // Load the current themeData.json structure and update with current parameters
+  const themeData = {
+    midnight: RAW_THEME_DATA.midnight,
+    twilight: RAW_THEME_DATA.twilight,
+    dawn: RAW_THEME_DATA.dawn,
+    noon: RAW_THEME_DATA.noon,
+  };
 
-  // Get all flavor parameters
-  const allFlavorParams = Object.entries(FLAVORS).reduce(
-    (acc, [themeKey, themeFlavorMap]) => {
-      acc[themeKey] = Object.entries(themeFlavorMap).reduce(
-        (flavorAcc, [flavorKey, flavorData]) => {
-          const [accentHue, accentSat, accentLight, commentLight] = flavorData;
-          flavorAcc[flavorKey] = {
-            accentHue,
-            accentSat,
-            accentLight,
-            commentLight,
-          };
-          return flavorAcc;
-        },
-        {} as Record<string, Partial<ThemeParams>>
-      );
-      return acc;
-    },
-    {} as Record<string, Record<string, Partial<ThemeParams>>>
-  );
-
-  return JSON.stringify(
-    {
-      metadata: {
-        generatedAt: new Date().toISOString(),
-        currentTheme: activeTheme,
-        currentFlavor: flavor,
-        generator: 'Lumina Theme Generator',
-        version: '1.0.0',
-      },
-      themeBaseParameters: allThemeParams,
-      flavorParameters: allFlavorParams,
-      currentSliderValues: {
-        bgHue: params.bgHue,
-        bgSat: params.bgSat,
-        bgLight: params.bgLight,
+  // Update the active theme with current parameters
+  themeData[activeTheme] = {
+    ...themeData[activeTheme],
+    bgHue: params.bgHue,
+    bgSat: params.bgSat,
+    bgLight: params.bgLight,
+    accentHue: params.accentHue,
+    accentSat: params.accentSat,
+    accentLight: params.accentLight,
+    commentLight: params.commentLight,
+    flavors: {
+      ...themeData[activeTheme].flavors,
+      [flavor]: {
         accentHue: params.accentHue,
         accentSat: params.accentSat,
         accentLight: params.accentLight,
         commentLight: params.commentLight,
       },
-      colorGenerationRules: {
-        accentHueOffsets: [-30, 30, 60, 120, 180, -60, 0, -90],
-        mutedColorFormula: 'accentSat - 25%, accentLight + 10%',
-        flavorProgression:
-          '+5 saturation, -10 lightness per step (pastel -> normal -> high-contrast)',
-      },
     },
-    null,
-    2
-  );
+  };
+
+  return JSON.stringify(themeData, null, 2);
 };

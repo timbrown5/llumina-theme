@@ -1,6 +1,7 @@
 import type { Theme, ColorGroup, Tab, SliderConfig, ThemeKey, FlavorKey } from '../types/index.ts';
 
-export const THEMES: Record<ThemeKey, Theme> = {
+// Theme data - you can update this object directly or copy/paste from exported JSON
+const themeData = {
   midnight: {
     name: 'Lumina Midnight',
     tagline: 'Deep darkness with electric neon accents',
@@ -12,6 +13,26 @@ export const THEMES: Record<ThemeKey, Theme> = {
     accentSat: 90,
     accentLight: 70,
     commentLight: 45,
+    flavors: {
+      pastel: {
+        accentHue: 0,
+        accentSat: 85,
+        accentLight: 80,
+        commentLight: 55,
+      },
+      normal: {
+        accentHue: 0,
+        accentSat: 90,
+        accentLight: 70,
+        commentLight: 45,
+      },
+      'high-contrast': {
+        accentHue: 0,
+        accentSat: 95,
+        accentLight: 60,
+        commentLight: 35,
+      },
+    },
   },
   twilight: {
     name: 'Lumina Twilight',
@@ -24,6 +45,26 @@ export const THEMES: Record<ThemeKey, Theme> = {
     accentSat: 85,
     accentLight: 68,
     commentLight: 55,
+    flavors: {
+      pastel: {
+        accentHue: 0,
+        accentSat: 80,
+        accentLight: 78,
+        commentLight: 65,
+      },
+      normal: {
+        accentHue: 0,
+        accentSat: 85,
+        accentLight: 68,
+        commentLight: 55,
+      },
+      'high-contrast': {
+        accentHue: 0,
+        accentSat: 90,
+        accentLight: 58,
+        commentLight: 45,
+      },
+    },
   },
   dawn: {
     name: 'Lumina Dawn',
@@ -36,6 +77,26 @@ export const THEMES: Record<ThemeKey, Theme> = {
     accentSat: 80,
     accentLight: 65,
     commentLight: 60,
+    flavors: {
+      pastel: {
+        accentHue: 0,
+        accentSat: 75,
+        accentLight: 75,
+        commentLight: 70,
+      },
+      normal: {
+        accentHue: 0,
+        accentSat: 80,
+        accentLight: 65,
+        commentLight: 60,
+      },
+      'high-contrast': {
+        accentHue: 0,
+        accentSat: 85,
+        accentLight: 55,
+        commentLight: 50,
+      },
+    },
   },
   noon: {
     name: 'Lumina Noon',
@@ -48,8 +109,74 @@ export const THEMES: Record<ThemeKey, Theme> = {
     accentSat: 65,
     accentLight: 40,
     commentLight: 50,
+    flavors: {
+      pastel: {
+        accentHue: 0,
+        accentSat: 60,
+        accentLight: 50,
+        commentLight: 60,
+      },
+      normal: {
+        accentHue: 0,
+        accentSat: 65,
+        accentLight: 40,
+        commentLight: 50,
+      },
+      'high-contrast': {
+        accentHue: 0,
+        accentSat: 70,
+        accentLight: 30,
+        commentLight: 40,
+      },
+    },
   },
-};
+} as const;
+
+// Derive THEMES from JSON data
+export const THEMES: Record<ThemeKey, Theme> = Object.entries(themeData).reduce(
+  (acc, [key, data]) => {
+    acc[key as ThemeKey] = {
+      name: data.name,
+      tagline: data.tagline,
+      inspirations: data.inspirations,
+      bgHue: data.bgHue,
+      bgSat: data.bgSat,
+      bgLight: data.bgLight,
+      accentHue: data.accentHue,
+      accentSat: data.accentSat,
+      accentLight: data.accentLight,
+      commentLight: data.commentLight,
+    };
+    return acc;
+  },
+  {} as Record<ThemeKey, Theme>
+);
+
+// Derive FLAVORS from JSON data
+export const FLAVORS: Record<
+  ThemeKey,
+  Record<FlavorKey, [number, number, number, number]>
+> = Object.entries(themeData).reduce(
+  (acc, [themeKey, data]) => {
+    acc[themeKey as ThemeKey] = Object.entries(data.flavors).reduce(
+      (flavorAcc, [flavorKey, flavorData]) => {
+        flavorAcc[flavorKey as FlavorKey] = [
+          flavorData.accentHue ?? data.accentHue,
+          flavorData.accentSat ?? data.accentSat,
+          flavorData.accentLight ?? data.accentLight,
+          flavorData.commentLight ?? data.commentLight,
+        ];
+        return flavorAcc;
+      },
+      {} as Record<FlavorKey, [number, number, number, number]>
+    );
+    return acc;
+  },
+  {} as Record<ThemeKey, Record<FlavorKey, [number, number, number, number]>>
+);
+
+// Export the raw theme data for other uses
+export const RAW_THEME_DATA = themeData;
 
 export const COLOR_GROUPS: Record<string, ColorGroup[]> = {
   main: [
@@ -70,7 +197,7 @@ export const COLOR_GROUPS: Record<string, ColorGroup[]> = {
     { key: 'base0C', name: 'Cyan' },
     { key: 'base0D', name: 'Blue' },
     { key: 'base0E', name: 'Purple' },
-    { key: 'base0F', name: 'Brown' },
+    { key: 'base0F', name: 'Pink' },
   ],
   muted: [
     { key: 'base10', name: 'Muted Red' },
@@ -80,7 +207,7 @@ export const COLOR_GROUPS: Record<string, ColorGroup[]> = {
     { key: 'base14', name: 'Muted Cyan' },
     { key: 'base15', name: 'Muted Blue' },
     { key: 'base16', name: 'Muted Purple' },
-    { key: 'base17', name: 'Muted Brown' },
+    { key: 'base17', name: 'Muted Pink' },
   ],
 };
 
@@ -92,37 +219,14 @@ export const TABS: Tab[] = [
   { id: 'terminal', label: 'Terminal' },
 ];
 
-export const FLAVORS: Record<ThemeKey, Record<FlavorKey, [number, number, number, number]>> = {
-  midnight: {
-    pastel: [300, 85, 80, 55],
-    normal: [300, 90, 70, 45],
-    'high-contrast': [300, 95, 60, 35],
-  },
-  twilight: {
-    pastel: [220, 80, 78, 65],
-    normal: [220, 85, 68, 55],
-    'high-contrast': [220, 90, 58, 45],
-  },
-  dawn: {
-    pastel: [15, 75, 75, 70],
-    normal: [15, 80, 65, 60],
-    'high-contrast': [15, 85, 55, 50],
-  },
-  noon: {
-    pastel: [35, 60, 50, 60],
-    normal: [35, 65, 40, 50],
-    'high-contrast': [35, 70, 30, 40],
-  },
-};
-
 export const SLIDER_CONFIGS: Record<string, SliderConfig[]> = {
   main: [
-    { label: 'Background Hue', key: 'bgHue', min: 0, max: 360, type: 'hue' },
+    { label: 'Background Hue', key: 'bgHue', min: -180, max: 180, type: 'hue' },
     { label: 'Background Saturation', key: 'bgSat', min: 0, max: 100, type: 'saturation' },
     { label: 'Background Lightness', key: 'bgLight', min: 0, max: 100, type: 'lightness' },
   ],
   accent: [
-    { label: 'Accent Hue Shift', key: 'accentHue', min: 0, max: 360, type: 'hue' },
+    { label: 'Accent Hue Shift', key: 'accentHue', min: -180, max: 180, type: 'hue' },
     { label: 'Accent Saturation', key: 'accentSat', min: 0, max: 100, type: 'saturation' },
     { label: 'Accent Lightness', key: 'accentLight', min: 0, max: 100, type: 'lightness' },
   ],

@@ -1,4 +1,4 @@
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import type { Base24Colors, TabKey } from '../types/index.ts';
 
 // Convert our Base24 colors to react-syntax-highlighter theme
@@ -6,7 +6,8 @@ const createBase24Theme = (colors: Base24Colors) => ({
   'code[class*="language-"]': {
     color: colors.base05,
     background: colors.base00,
-    fontFamily: 'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
+    fontFamily:
+      '"Maple Mono", "Maple Mono NF", "JetBrains Mono", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
     fontSize: '0.875rem',
     lineHeight: '1.5',
     direction: 'ltr' as const,
@@ -25,7 +26,8 @@ const createBase24Theme = (colors: Base24Colors) => ({
   'pre[class*="language-"]': {
     color: colors.base05,
     background: colors.base00,
-    fontFamily: 'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
+    fontFamily:
+      '"Maple Mono", "Maple Mono NF", "JetBrains Mono", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
     fontSize: '0.875rem',
     lineHeight: '1.5',
     direction: 'ltr' as const,
@@ -46,51 +48,66 @@ const createBase24Theme = (colors: Base24Colors) => ({
     borderRadius: '0.5rem',
     border: `1px solid ${colors.base02}`,
   },
-  // Base24 token mappings
+
+  // Comments
   comment: { color: colors.base03, fontStyle: 'italic' },
   prolog: { color: colors.base03, fontStyle: 'italic' },
   doctype: { color: colors.base03, fontStyle: 'italic' },
   cdata: { color: colors.base03, fontStyle: 'italic' },
-  
+
+  // Punctuation
   punctuation: { color: colors.base05 },
-  
-  namespace: { opacity: 0.7 },
-  
-  property: { color: colors.base08 },
-  tag: { color: colors.base08 },
+
+  // Constants
   boolean: { color: colors.base09 },
   number: { color: colors.base09 },
   constant: { color: colors.base09 },
   symbol: { color: colors.base09 },
-  deleted: { color: colors.base08 },
-  
-  selector: { color: colors.base0B },
-  'attr-name': { color: colors.base0B },
+
+  // Strings
   string: { color: colors.base0B },
   char: { color: colors.base0B },
-  builtin: { color: colors.base0B },
-  inserted: { color: colors.base0B },
-  
-  operator: { color: colors.base05 },
-  entity: { color: colors.base05 },
-  url: { color: colors.base05 },
-  
-  atrule: { color: colors.base0C },
-  'attr-value': { color: colors.base0C },
-  keyword: { color: colors.base0E },
-  
+
+  // Identifiers
+  property: { color: colors.base08 },
+  tag: { color: colors.base08 },
+  variable: { color: colors.base08 },
+
+  // Functions
   function: { color: colors.base0D },
+  'function-name': { color: colors.base0D },
+
+  // Keywords and Statements
+  keyword: { color: colors.base0E, fontWeight: 'bold' },
+  statement: { color: colors.base0E },
+  conditional: { color: colors.base0E },
+  repeat: { color: colors.base0E },
+  label: { color: colors.base0A },
+  operator: { color: colors.base05 },
+
+  // Types
   'class-name': { color: colors.base0A },
-  
+  type: { color: colors.base0A },
+
+  // Special
+  selector: { color: colors.base0C },
+  'attr-name': { color: colors.base0C },
+  builtin: { color: colors.base0C },
+  inserted: { color: colors.base0B },
+  deleted: { color: colors.base08 },
+
+  atrule: { color: colors.base0A },
+  'attr-value': { color: colors.base0B },
+
   regex: { color: colors.base0C },
   important: { color: colors.base0F, fontWeight: 'bold' },
-  variable: { color: colors.base08 },
-  
+
+  namespace: { opacity: 0.7 },
+
   // Language specific
   'language-css .token.string': { color: colors.base0B },
   '.style .token.string': { color: colors.base0B },
 });
-
 // Clean, simple code examples
 const CODE_EXAMPLES: Record<string, string> = {
   javascript: `// JavaScript - React Hook with Custom State
@@ -186,7 +203,7 @@ Untracked files:
 no changes added to commit (use "git add" and/or "git commit -a")
 
 ❯ nvim init.lua
--- Opening Neovim with your new theme!`
+-- Opening Neovim with your new theme!`,
 };
 
 interface SyntaxPreviewProps {
@@ -199,10 +216,10 @@ const SyntaxPreview: React.FC<SyntaxPreviewProps> = ({ colors, language }) => {
   const languageMap: Record<string, string> = {
     terminal: 'bash',
     cpp: 'cpp',
-    javascript: 'javascript', 
-    python: 'python'
+    javascript: 'javascript',
+    python: 'python',
   };
-  
+
   const code = CODE_EXAMPLES[language] || CODE_EXAMPLES.javascript;
   const syntaxLanguage = languageMap[language] || language;
   const theme = createBase24Theme(colors);
@@ -214,7 +231,7 @@ const SyntaxPreview: React.FC<SyntaxPreviewProps> = ({ colors, language }) => {
       customStyle={{
         margin: 0,
         fontSize: '0.875rem',
-        lineHeight: '1.5'
+        lineHeight: '1.5',
       }}
     >
       {code}
