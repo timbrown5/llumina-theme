@@ -1,48 +1,122 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { THEMES, FLAVORS } from '../constants/index.ts';
 import { generateColors } from '../utils/colorUtils.ts';
 import { createNvimTheme, createBase24Json, createThemeParams } from '../utils/exportUtils.ts';
 import type { ThemeKey, FlavorKey, TabKey, ThemeParams, ThemeLogic } from '../types/index.ts';
 
+const STORAGE_KEY = 'lumina-theme-settings';
+
+interface StoredSettings {
+  [key: string]: ThemeParams;
+}
+
+const saveSettings = (settings: StoredSettings) => {
+  try {
+    const serialized = JSON.stringify(settings);
+    sessionStorage.setItem(STORAGE_KEY, serialized);
+  } catch (error) {
+    console.warn('Failed to save theme settings:', error);
+  }
+};
+
+const loadSettings = (): StoredSettings => {
+  try {
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch (error) {
+    console.warn('Failed to load theme settings:', error);
+    return {};
+  }
+};
+
+const getSettingsKey = (theme: ThemeKey, flavor: FlavorKey) => `${theme}-${flavor}`;
+
 export const useThemeLogic = (): ThemeLogic => {
   const [activeTheme, setActiveTheme] = useState<ThemeKey>('twilight');
-  const [params, setParams] = useState<ThemeParams>(THEMES.twilight);
+  const [flavor, setFlavor] = useState<FlavorKey>('normal');
+  const [params, setParams] = useState<ThemeParams>(() => {
+    const flavorData = FLAVORS.twilight.normal;
+    const [accentHue, accentSat, accentLight, commentLight] = flavorData;
+    return { ...THEMES.twilight, accentHue, accentSat, accentLight, commentLight };
+  });
   const [copied, setCopied] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<TabKey>('colors');
-  const [flavor, setFlavor] = useState<FlavorKey>('normal');
   const [uiTheme, setUiTheme] = useState<ThemeKey>('twilight');
+  const [storedSettings, setStoredSettings] = useState<StoredSettings>({});
+
+  useEffect(() => {
+    setStoredSettings(loadSettings());
+  }, []);
+
+  useEffect(() => {
+    const settingsKey = getSettingsKey(activeTheme, flavor);
+    const stored = storedSettings[settingsKey];
+
+    if (stored) {
+      setParams(stored);
+    } else {
+      const flavorData = FLAVORS[activeTheme]?.[flavor] || FLAVORS[activeTheme].normal;
+      const [accentHue, accentSat, accentLight, commentLight] = flavorData;
+      const newParams = { ...THEMES[activeTheme], accentHue, accentSat, accentLight, commentLight };
+      setParams(newParams);
+    }
+  }, [activeTheme, flavor, storedSettings]);
 
   const colors = generateColors(params);
   const pageColors = generateColors({
     ...THEMES[uiTheme],
-    accentSat: 90,
+    accentSat: 85,
     accentLight: 70,
-    commentLight: 65,
+    commentLight: 60,
   });
 
-  const updateParam = (key: keyof ThemeParams, value: number) =>
-    setParams((prev) => ({ ...prev, [key]: value }));
+  const updateParam = (key: keyof ThemeParams, value: number) => {
+    const newParams = { ...params, [key]: value };
+    setParams(newParams);
+
+    const settingsKey = getSettingsKey(activeTheme, flavor);
+    const newStoredSettings = { ...storedSettings, [settingsKey]: newParams };
+    setStoredSettings(newStoredSettings);
+    saveSettings(newStoredSettings);
+  };
 
   const applyFlavor = (baseParams: ThemeParams, flavorType: FlavorKey): ThemeParams => {
-    const [accentSat, accentLight, commentLight] =
-      FLAVORS[activeTheme]?.[flavorType] || FLAVORS[activeTheme].normal;
-    return { ...baseParams, accentSat, accentLight, commentLight };
+    const flavorData = FLAVORS[activeTheme]?.[flavorType] || FLAVORS[activeTheme].normal;
+    const [accentHue, accentSat, accentLight, commentLight] = flavorData;
+    return { ...baseParams, accentHue, accentSat, accentLight, commentLight };
   };
 
   const switchTheme = (themeKey: ThemeKey) => {
     setActiveTheme(themeKey);
-    setParams(applyFlavor({ ...THEMES[themeKey] }, flavor));
   };
 
   const switchFlavor = (newFlavor: FlavorKey) => {
     setFlavor(newFlavor);
-    setParams(applyFlavor({ ...THEMES[activeTheme] }, newFlavor));
   };
 
-  const resetToFlavor = () => setParams(applyFlavor({ ...THEMES[activeTheme] }, flavor));
+  const resetToFlavor = () => {
+    const newParams = applyFlavor({ ...THEMES[activeTheme] }, flavor);
+    setParams(newParams);
+
+    const settingsKey = getSettingsKey(activeTheme, flavor);
+    const newStoredSettings = { ...storedSettings, [settingsKey]: newParams };
+    setStoredSettings(newStoredSettings);
+    saveSettings(newStoredSettings);
+  };
+
   const resetToTheme = () => {
-    setParams({ ...THEMES[activeTheme] });
+    const newParams = { ...THEMES[activeTheme] };
+    setParams(newParams);
     setFlavor('normal');
+
+    const newStoredSettings = { ...storedSettings };
+    Object.keys(newStoredSettings).forEach((key) => {
+      if (key.startsWith(activeTheme)) {
+        delete newStoredSettings[key];
+      }
+    });
+    setStoredSettings(newStoredSettings);
+    saveSettings(newStoredSettings);
   };
 
   const copyToClipboard = (content: string) => {
@@ -59,7 +133,6 @@ export const useThemeLogic = (): ThemeLogic => {
     copyToClipboard(createThemeParams(activeTheme, flavor, params, colors));
 
   return {
-    // State
     activeTheme,
     params,
     copied,
@@ -68,7 +141,6 @@ export const useThemeLogic = (): ThemeLogic => {
     uiTheme,
     colors,
     pageColors,
-    // Actions
     updateParam,
     switchTheme,
     switchFlavor,

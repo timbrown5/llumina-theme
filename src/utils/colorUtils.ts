@@ -45,6 +45,23 @@ export const okhslToRgb = (h: number, s: number, l: number): string => {
 export const createGradientBg = (colors: string[]): string =>
   `linear-gradient(90deg, ${colors.join(', ')})`;
 
+const normalizeHue = (hue: number): number => ((hue % 360) + 360) % 360;
+
+const createAccentHues = (baseHue: number): number[] => {
+  const base = normalizeHue(baseHue);
+
+  return [
+    normalizeHue(base), // red
+    normalizeHue(base + 30), // orange
+    normalizeHue(base + 60), // yelow
+    normalizeHue(base + 150), // green
+    normalizeHue(base + 180), // teal/cyan
+    normalizeHue(base + 210), // blue
+    normalizeHue(base + 300), // purple
+    normalizeHue(base + 330), // brown?
+  ];
+};
+
 export const generateColors = (params: ThemeParams): Base24Colors => {
   const isLight = params.bgLight > 50;
   const [bgLightDecimal, bgSatDecimal, accentSatDecimal, accentLightDecimal, commentLightDecimal] =
@@ -52,34 +69,48 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
       (v) => v / 100
     );
 
-  const mutedSatDecimal = accentSatDecimal * 0.5;
-  const mutedLightDecimal = isLight ? accentLightDecimal * 0.8 : accentLightDecimal * 1.1;
+  const bgBase = bgLightDecimal;
+  const bgStep = isLight ? -0.05 : 0.08;
+  const selectionStep = isLight ? -0.15 : 0.2;
+
+  const fgBase = isLight ? 0.15 : 0.9;
+  const fgStep = isLight ? -0.05 : 0.03;
+
+  const accentHues = createAccentHues(params.accentHue);
+
+  const commentHue = normalizeHue(params.bgHue + (isLight ? 180 : 0));
+  const commentSat = isLight ? 0.25 : 0.15;
+
+  // Calculate muted colors by applying systematic rule to accent colors
+  // Muted = Accent colors with -25% saturation, +10% lightness (or whatever offset you prefer)
+  const mutedSatDecimal = Math.max(0.05, accentSatDecimal - 0.25); // -25% saturation from accent
+  const mutedLightDecimal = Math.min(0.95, accentLightDecimal + 0.1); // +10% lighter than accent
 
   const colorMap: Record<keyof Base24Colors, [number, number, number]> = {
-    base00: [params.bgHue, bgSatDecimal, bgLightDecimal],
-    base01: [params.bgHue, bgSatDecimal + 0.08, bgLightDecimal + (isLight ? -0.06 : 0.06)],
-    base02: [params.bgHue, bgSatDecimal + 0.16, bgLightDecimal + (isLight ? -0.12 : 0.15)],
-    base03: [240, 0.3, commentLightDecimal],
-    base04: [240, 0.2, isLight ? 0.55 : 0.65],
-    base05: [240, 0.15, isLight ? 0.25 : 0.85],
-    base06: [240, 0.12, isLight ? 0.18 : 0.9],
-    base07: [240, 0.1, isLight ? 0.12 : 0.95],
-    base08: [355, accentSatDecimal, accentLightDecimal],
-    base09: [25, accentSatDecimal, accentLightDecimal],
-    base0A: [50, accentSatDecimal, accentLightDecimal],
-    base0B: [115, accentSatDecimal, accentLightDecimal],
-    base0C: [185, accentSatDecimal, accentLightDecimal],
-    base0D: [220, accentSatDecimal, accentLightDecimal],
-    base0E: [275, accentSatDecimal, accentLightDecimal],
-    base0F: [5, accentSatDecimal, accentLightDecimal],
-    base10: [355, mutedSatDecimal, mutedLightDecimal],
-    base11: [25, mutedSatDecimal, mutedLightDecimal],
-    base12: [50, mutedSatDecimal, mutedLightDecimal],
-    base13: [115, mutedSatDecimal, mutedLightDecimal],
-    base14: [185, mutedSatDecimal, mutedLightDecimal],
-    base15: [220, mutedSatDecimal, mutedLightDecimal],
-    base16: [275, mutedSatDecimal, mutedLightDecimal],
-    base17: [5, mutedSatDecimal, mutedLightDecimal],
+    base00: [params.bgHue, bgSatDecimal, bgBase],
+    base01: [params.bgHue, bgSatDecimal * 1.2, bgBase + bgStep],
+    base02: [params.bgHue, bgSatDecimal * 1.5, bgBase + selectionStep],
+    base03: [commentHue, commentSat, commentLightDecimal],
+    base04: [params.bgHue, 0.2, isLight ? 0.45 : 0.65],
+    base05: [params.bgHue, 0.15, fgBase],
+    base06: [params.bgHue, 0.12, fgBase + fgStep],
+    base07: [params.bgHue, 0.1, fgBase + fgStep * 2],
+    base08: [accentHues[0], accentSatDecimal, accentLightDecimal],
+    base09: [accentHues[1], accentSatDecimal, accentLightDecimal],
+    base0A: [accentHues[2], accentSatDecimal, accentLightDecimal],
+    base0B: [accentHues[3], accentSatDecimal, accentLightDecimal],
+    base0C: [accentHues[4], accentSatDecimal, accentLightDecimal],
+    base0D: [accentHues[5], accentSatDecimal, accentLightDecimal],
+    base0E: [accentHues[6], accentSatDecimal, accentLightDecimal],
+    base0F: [accentHues[7], accentSatDecimal, accentLightDecimal],
+    base10: [accentHues[0], mutedSatDecimal, mutedLightDecimal],
+    base11: [accentHues[1], mutedSatDecimal, mutedLightDecimal],
+    base12: [accentHues[2], mutedSatDecimal, mutedLightDecimal],
+    base13: [accentHues[3], mutedSatDecimal, mutedLightDecimal],
+    base14: [accentHues[4], mutedSatDecimal, mutedLightDecimal],
+    base15: [accentHues[5], mutedSatDecimal, mutedLightDecimal],
+    base16: [accentHues[6], mutedSatDecimal, mutedLightDecimal],
+    base17: [accentHues[7], mutedSatDecimal, mutedLightDecimal],
   };
 
   const result: Base24Colors = {} as Base24Colors;

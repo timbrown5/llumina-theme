@@ -5,6 +5,7 @@ export interface Theme {
   bgHue: number;
   bgSat: number;
   bgLight: number;
+  accentHue: number;
   accentSat: number;
   accentLight: number;
   commentLight: number;
@@ -14,6 +15,7 @@ export interface ThemeParams {
   bgHue: number;
   bgSat: number;
   bgLight: number;
+  accentHue: number;
   accentSat: number;
   accentLight: number;
   commentLight: number;
