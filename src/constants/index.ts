@@ -92,44 +92,136 @@ const themeData = {
       },
       'high-contrast': {
         accentHue: 0,
-        accentSat: 85,
-        accentLight: 50,
-        commentLight: 50,
+// Theme data - you can update this object directly or copy/paste from exported JSON
+const themeData = {
+  "midnight": {
+    "name": "Lumina Midnight",
+    "tagline": "Deep darkness with electric neon accents",
+    "inspirations": "City lights, dark nights, energy, excitement, neon signs, nightlife",
+    "bgHue": 270,
+    "bgSat": 25,
+    "bgLight": 6,
+    "accentHue": 0,
+    "accentSat": 95,
+    "accentLight": 50,
+    "commentLight": 35,
+    "flavors": {
+      "pastel": {
+        "accentHue": 0,
+        "accentSat": 85,
+        "accentLight": 80,
+        "commentLight": 55
       },
-    },
+      "normal": {
+        "accentHue": 0,
+        "accentSat": 90,
+        "accentLight": 70,
+        "commentLight": 50
+      },
+      "high-contrast": {
+        "accentHue": 0,
+        "accentSat": 95,
+        "accentLight": 50,
+        "commentLight": 60
+      }
+    }
   },
-  noon: {
-    name: 'Lumina Noon',
-    tagline: 'Golden sunshine and natural warmth',
-    inspirations: 'Warm days, good times, beach afternoons, lazy picnics, contentment, comfort',
-    bgHue: 45,
-    bgSat: 25,
-    bgLight: 96,
-    accentHue: 0,
-    accentSat: 90,
-    accentLight: 45,
-    commentLight: 40,
-    flavors: {
-      pastel: {
-        accentHue: 0,
-        accentSat: 60,
-        accentLight: 50,
-        commentLight: 60,
+  "twilight": {
+    "name": "Lumina Twilight",
+    "tagline": "The deep blue of the last light of the day",
+    "inspirations": "Fading light, peaceful evenings, blue hour, tranquility, rest",
+    "bgHue": 242,
+    "bgSat": 40,
+    "bgLight": 12,
+    "accentHue": 0,
+    "accentSat": 85,
+    "accentLight": 68,
+    "commentLight": 55,
+    "flavors": {
+      "pastel": {
+        "accentHue": 0,
+        "accentSat": 85,
+        "accentLight": 75,
+        "commentLight": 65
       },
-      normal: {
-        accentHue: 0,
-        accentSat: 65,
-        accentLight: 40,
-        commentLight: 50,
+      "normal": {
+        "accentHue": 0,
+        "accentSat": 90,
+        "accentLight": 70,
+        "commentLight": 55
       },
-      'high-contrast': {
-        accentHue: 0,
-        accentSat: 90,
-        accentLight: 45,
-        commentLight: 40,
-      },
-    },
+      "high-contrast": {
+        "accentHue": 0,
+        "accentSat": 95,
+        "accentLight": 60,
+        "commentLight": 60
+      }
+    }
   },
+  "dawn": {
+    "name": "Lumina Dawn",
+    "tagline": "The warm pink and gold of sunrise",
+    "inspirations": "Sunrise, new beginnings, opportunity, hope, fresh starts, awakening",
+    "bgHue": 345,
+    "bgSat": 45,
+    "bgLight": 18,
+    "accentHue": 15,
+    "accentSat": 90,
+    "accentLight": 65,
+    "commentLight": 70,
+    "flavors": {
+      "pastel": {
+        "accentHue": 15,
+        "accentSat": 80,
+        "accentLight": 80,
+        "commentLight": 70
+      },
+      "normal": {
+        "accentHue":15,
+        "accentSat": 80,
+        "accentLight": 70,
+        "commentLight": 70
+      },
+      "high-contrast": {
+        "accentHue": 15,
+        "accentSat": 90,
+        "accentLight": 65,
+        "commentLight": 70
+      }
+    }
+  },
+  "noon": {
+    "name": "Lumina Noon",
+    "tagline": "Golden sunshine and natural warmth",
+    "inspirations": "Warm days, good times, beach afternoons, lazy picnics, contentment, comfort",
+    "bgHue": 45,
+    "bgSat": 25,
+    "bgLight": 96,
+    "accentHue": 0,
+    "accentSat": 90,
+    "accentLight": 45,
+    "commentLight": 40,
+    "flavors": {
+      "pastel": {
+        "accentHue": 0,
+        "accentSat": 60,
+        "accentLight": 50,
+        "commentLight": 60
+      },
+      "normal": {
+        "accentHue": 0,
+        "accentSat": 65,
+        "accentLight": 40,
+        "commentLight": 50
+      },
+      "high-contrast": {
+        "accentHue": 0,
+        "accentSat": 90,
+        "accentLight": 45,
+        "commentLight": 40
+      }
+    }
+  }
 } as const;
 
 // Derive THEMES from JSON data
