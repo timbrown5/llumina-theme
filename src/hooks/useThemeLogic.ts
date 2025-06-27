@@ -1,11 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  getBaseTheme,
-  getThemeParams,
-  getAllThemeKeys,
-  getAllFlavorKeys,
-  RAW_THEME_DATA,
-} from '../constants/index.ts';
+import { getBaseTheme, getThemeParams, RAW_THEME_DATA } from '../constants/index.ts';
 import { generateColors } from '../utils/colorUtils.ts';
 import {
   createNvimTheme,
@@ -67,8 +61,6 @@ export const useThemeLogic = (): ThemeLogic => {
   }, [activeTheme, flavor, storedSettings]);
 
   const colors = generateColors(params);
-
-  // UI always matches the theme being edited - simple and intuitive
   const pageColors = colors;
 
   const updateParam = (key: keyof ThemeParams, value: number) => {
@@ -104,6 +96,7 @@ export const useThemeLogic = (): ThemeLogic => {
     setParams(newParams);
     setFlavor('normal');
 
+    // Clear all stored settings for this theme
     const newStoredSettings = { ...storedSettings };
     Object.keys(newStoredSettings).forEach((key) => {
       if (key.startsWith(activeTheme)) {

@@ -327,7 +327,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ colors, activeTab, setActiv
   );
 };
 
-// Export Panel Component
 interface ExportPanelProps {
   exportNvimTheme: () => void;
   exportTheme: () => void;
@@ -424,7 +423,6 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
   </div>
 );
 
-// Main App Component
 const App: React.FC = () => {
   const themeLogic = useThemeLogic();
 
@@ -439,7 +437,6 @@ const App: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <Header pageColors={themeLogic.pageColors} />
 
-        {/* OPTIMIZATION 4: Generic Theme Selector */}
         <Selector
           title="🎯 Select Base Theme to Customize"
           items={getAllThemeKeys()}
@@ -457,7 +454,6 @@ const App: React.FC = () => {
           }}
         />
 
-        {/* OPTIMIZATION 4: Generic Flavor Selector */}
         <Selector
           title="🎭 Choose Flavor Intensity"
           items={getAllFlavorKeys()}

@@ -18,7 +18,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
         🖥️ UI Elements Preview
       </h4>
 
-      {/* Mock Editor Interface */}
       <div
         style={{
           background: colors.base01,
@@ -30,7 +29,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
           Code Editor
         </div>
 
-        {/* Editor Tabs */}
         <div className="flex gap-1 mb-2">
           <div
             style={{
@@ -52,7 +50,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
           </div>
         </div>
 
-        {/* Code Content */}
         <div
           style={{ background: colors.base00 }}
           className="rounded p-2 text-xs font-mono leading-relaxed"
@@ -91,7 +88,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
         </div>
       </div>
 
-      {/* Mock Terminal */}
       <div
         style={{
           background: colors.base00,
@@ -116,13 +112,11 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
         </div>
       </div>
 
-      {/* UI Controls */}
       <div className="space-y-3">
         <div className="text-xs font-medium" style={{ color: colors.base04 }}>
           Interface Elements
         </div>
 
-        {/* Buttons */}
         <div className="flex gap-2 flex-wrap">
           <button
             style={{
@@ -163,7 +157,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
           </button>
         </div>
 
-        {/* Form Elements */}
         <div className="space-y-2">
           <input
             type="text"
@@ -183,7 +176,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
           </div>
         </div>
 
-        {/* Status Indicators */}
         <div className="flex gap-4 text-xs">
           <div className="flex items-center gap-1">
             <div style={{ background: colors.base0B }} className="w-2 h-2 rounded-full" />
@@ -199,7 +191,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
           </div>
         </div>
 
-        {/* Progress Bar */}
         <div className="space-y-1">
           <div className="text-xs" style={{ color: colors.base04 }}>
             Loading Progress
@@ -215,7 +206,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
           </div>
         </div>
 
-        {/* Notification */}
         <div
           style={{
             background: colors.base01,
@@ -232,7 +222,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
           </div>
         </div>
 
-        {/* Warning Alert */}
         <div
           style={{
             background: colors.base01,
@@ -250,7 +239,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
         </div>
       </div>
 
-      {/* Color Palette Quick Reference */}
       <div className="pt-2 border-t" style={{ borderColor: colors.base02 }}>
         <div className="text-xs font-medium mb-2" style={{ color: colors.base04 }}>
           Color Palette

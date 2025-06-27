@@ -2,7 +2,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { Base24Colors, TabKey } from '../types/index.ts';
 
-// Simple theme override instead of creating entire theme from scratch
+// Override theme colors instead of creating entire theme from scratch
 const createBase24Theme = (colors: Base24Colors) => ({
   ...oneDark,
   'code[class*="language-"]': {
@@ -16,7 +16,6 @@ const createBase24Theme = (colors: Base24Colors) => ({
     background: colors.base00,
     border: `1px solid ${colors.base02}`,
   },
-  // Override only the essential token colors
   comment: { color: colors.base03, fontStyle: 'italic' },
   string: { color: colors.base0B },
   number: { color: colors.base09 },
@@ -31,7 +30,6 @@ const createBase24Theme = (colors: Base24Colors) => ({
   punctuation: { color: colors.base05 },
 });
 
-// Simplified code examples
 const CODE_EXAMPLES: Record<string, string> = {
   javascript: `// React Hook with State Management
 import { useState, useEffect } from 'react'

@@ -74,33 +74,20 @@ export interface SliderConfig {
   type: SliderType;
 }
 
-export interface ButtonVariant {
-  primary: string;
-  secondary: string;
-  gradient: string;
-  gradientWarm: string;
-  gradientRed: string;
-}
-
 export interface ThemeLogic {
-  // State
   activeTheme: ThemeKey;
   params: ThemeParams;
   copied: boolean;
   activeTab: TabKey;
   flavor: FlavorKey;
-  uiTheme: ThemeKey;
   colors: Base24Colors;
   pageColors: Base24Colors;
-
-  // Actions
   updateParam: (key: keyof ThemeParams, value: number) => void;
   switchTheme: (themeKey: ThemeKey) => void;
   switchFlavor: (flavor: FlavorKey) => void;
   resetToFlavor: () => void;
   resetToTheme: () => void;
   setActiveTab: (tab: TabKey) => void;
-  setUiTheme: (theme: ThemeKey) => void;
   exportNvimTheme: () => void;
   exportTheme: () => void;
   exportStylixTheme: () => void;

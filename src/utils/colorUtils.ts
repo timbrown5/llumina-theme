@@ -1,7 +1,6 @@
 import chroma from 'chroma-js';
 import type { ThemeParams, Base24Colors } from '../types/index.ts';
 
-// Simple wrapper for chroma with our preferred format
 export const okhslToRgb = (h: number, s: number, l: number): string => {
   return chroma.hsl(h, s / 100, l / 100).hex();
 };
@@ -9,7 +8,6 @@ export const okhslToRgb = (h: number, s: number, l: number): string => {
 export const createGradientBg = (colors: string[]): string =>
   `linear-gradient(90deg, ${colors.join(', ')})`;
 
-// Slider helper functions - much simpler with chroma
 export const generateHueGradient = (steps: number = 25): string[] => {
   return Array.from({ length: steps }, (_, i) => {
     const hue = (360 * i) / (steps - 1);
@@ -31,21 +29,19 @@ export const generateAccentHueGradient = (
 };
 
 export const generateSaturationGradient = (hue: number): string[] => [
-  chroma.hsl(hue, 0, 0.5).hex(), // Gray (0% saturation)
-  chroma.hsl(hue, 1.0, 0.5).hex(), // Full saturation
+  chroma.hsl(hue, 0, 0.5).hex(),
+  chroma.hsl(hue, 1.0, 0.5).hex(),
 ];
 
 export const generateLightnessGradient = (hue: number, saturation: number): string[] => [
-  chroma.hsl(hue, saturation / 100, 0).hex(), // Black
-  chroma.hsl(hue, saturation / 100, 0.5).hex(), // Mid
-  chroma.hsl(hue, saturation / 100, 1).hex(), // White
+  chroma.hsl(hue, saturation / 100, 0).hex(),
+  chroma.hsl(hue, saturation / 100, 0.5).hex(),
+  chroma.hsl(hue, saturation / 100, 1).hex(),
 ];
 
-// Simplified color generation using chroma's built-in color space handling
 export const generateColors = (params: ThemeParams): Base24Colors => {
   const isLight = params.bgLight > 50;
 
-  // Background colors
   const bgBase = chroma.hsl(params.bgHue, params.bgSat / 100, params.bgLight / 100);
   const base00 = bgBase.hex();
   const base01 = bgBase
@@ -57,18 +53,17 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
     .saturate(0.5)
     .hex();
 
-  // Comments - use complementary hue for better contrast
+  // Comments use complementary hue for better contrast
   const commentHue = (params.bgHue + (isLight ? 180 : 0)) % 360;
   const base03 = chroma.hsl(commentHue, 0.15, params.commentLight / 100).hex();
 
-  // Foreground colors
   const fgBase = isLight ? 0.15 : 0.9;
   const base04 = chroma.hsl(params.bgHue, 0.2, isLight ? 0.45 : 0.65).hex();
   const base05 = chroma.hsl(params.bgHue, 0.15, fgBase).hex();
   const base06 = chroma.hsl(params.bgHue, 0.12, fgBase + (isLight ? -0.05 : 0.03)).hex();
   const base07 = chroma.hsl(params.bgHue, 0.1, fgBase + (isLight ? -0.1 : 0.06)).hex();
 
-  // Accent colors - distributed around color wheel
+  // Accent colors distributed around color wheel
   const accentHues = [0, 30, 60, 120, 165, 210, 270, 330].map(
     (offset) => (params.accentHue + offset + 360) % 360
   );
@@ -78,7 +73,6 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
   const mutedSat = Math.max(0.05, accentSat - 0.25);
   const mutedLight = Math.min(0.95, accentLight + 0.1);
 
-  // Generate accent and muted colors
   const accents = accentHues.map((hue) => chroma.hsl(hue, accentSat, accentLight).hex());
   const muted = accentHues.map((hue) => chroma.hsl(hue, mutedSat, mutedLight).hex());
 

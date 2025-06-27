@@ -55,7 +55,6 @@ const Slider: React.FC<SliderProps> = ({
     onChange(parseInt(e.target.value));
   };
 
-  // Format the unit display
   const getUnit = () => {
     return type === 'hue' ? '°' : '%';
   };
@@ -91,7 +90,6 @@ const Slider: React.FC<SliderProps> = ({
             WebkitAppearance: 'none',
           }}
         />
-        {/* Custom slider thumb styling */}
         <style>{`
           input[type="range"]::-webkit-slider-thumb {
             appearance: none;
@@ -116,7 +114,6 @@ const Slider: React.FC<SliderProps> = ({
         `}</style>
       </div>
 
-      {/* Show current color preview if provided */}
       {previewColor && (
         <div className="flex items-center gap-2 mt-1">
           <div

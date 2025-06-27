@@ -6,7 +6,8 @@ interface ExportTemplate {
     colors: Base24Colors,
     themeName: string,
     flavor?: FlavorKey,
-    params?: ThemeParams
+    params?: ThemeParams,
+    activeTheme?: ThemeKey
   ) => string;
 }
 
@@ -26,7 +27,6 @@ local theme = {
   NormalFloat = { fg = colors.base05, bg = colors.base01 },
   Comment = { fg = colors.base03, italic = true },
 
-  -- Constants
   Constant = { fg = colors.base09 },
   String = { fg = colors.base0B },
   Character = { fg = colors.base0B },
@@ -34,11 +34,9 @@ local theme = {
   Boolean = { fg = colors.base09 },
   Float = { fg = colors.base09 },
 
-  -- Identifiers
   Identifier = { fg = colors.base08 },
   Function = { fg = colors.base0D },
 
-  -- Statements
   Statement = { fg = colors.base0E },
   Conditional = { fg = colors.base0E },
   Repeat = { fg = colors.base0E },
@@ -47,30 +45,25 @@ local theme = {
   Keyword = { fg = colors.base0E, bold = true },
   Exception = { fg = colors.base08 },
 
-  -- Types
   Type = { fg = colors.base0A },
   StorageClass = { fg = colors.base0A },
   Structure = { fg = colors.base0E },
 
-  -- Special
   Special = { fg = colors.base0C },
   SpecialChar = { fg = colors.base0F },
   Tag = { fg = colors.base0A },
   Delimiter = { fg = colors.base0F },
 
-  -- UI Elements
   CursorLine = { bg = colors.base01 },
   Visual = { bg = colors.base02 },
   Search = { fg = colors.base00, bg = colors.base0A },
   LineNr = { fg = colors.base03 },
   StatusLine = { fg = colors.base04, bg = colors.base02 },
 
-  -- Messages
   ErrorMsg = { fg = colors.base08 },
   WarningMsg = { fg = colors.base09 },
   MoreMsg = { fg = colors.base0B },
 
-  -- Diffs
   DiffAdd = { fg = colors.base0B, bg = colors.base00 },
   DiffChange = { fg = colors.base0A, bg = colors.base00 },
   DiffDelete = { fg = colors.base08, bg = colors.base00 },
@@ -133,17 +126,23 @@ ${Object.entries(colors)
   },
 
   params: {
-    generate: (colors, themeName, flavor, params, activeTheme) => {
+    generate: (
+      colors: Base24Colors,
+      themeName: string,
+      flavor?: FlavorKey,
+      params?: ThemeParams,
+      activeTheme?: ThemeKey
+    ) => {
       const themeData = JSON.parse(JSON.stringify(RAW_THEME_DATA));
-      const currentTheme = themeData[activeTheme];
+      const currentTheme = themeData[activeTheme!];
 
       if (currentTheme && params) {
         currentTheme.bgHue = params.bgHue;
         currentTheme.bgSat = params.bgSat;
         currentTheme.bgLight = params.bgLight;
 
-        if (currentTheme.flavors && currentTheme.flavors[flavor]) {
-          currentTheme.flavors[flavor] = {
+        if (currentTheme.flavors && currentTheme.flavors[flavor!]) {
+          currentTheme.flavors[flavor!] = {
             accentHue: params.accentHue,
             accentSat: params.accentSat,
             accentLight: params.accentLight,
@@ -152,8 +151,7 @@ ${Object.entries(colors)
         }
       }
 
-      return `// Theme data - you can update this object directly
-const themeData = ${JSON.stringify(themeData, null, 2)} as const;`;
+      return `const themeData = ${JSON.stringify(themeData, null, 2)} as const;`;
     },
   },
 };
