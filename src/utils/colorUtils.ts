@@ -1,55 +1,19 @@
+import chroma from 'chroma-js';
 import type { ThemeParams, Base24Colors } from '../types/index.ts';
 
+// Simple wrapper for chroma with our preferred format
 export const okhslToRgb = (h: number, s: number, l: number): string => {
-  h = h / 360;
-  const c = (1 - Math.abs(2 * l - 1)) * s;
-  const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
-  const m = l - c / 2;
-
-  let r: number, g: number, b: number;
-  if (h < 1 / 6) {
-    r = c;
-    g = x;
-    b = 0;
-  } else if (h < 2 / 6) {
-    r = x;
-    g = c;
-    b = 0;
-  } else if (h < 3 / 6) {
-    r = 0;
-    g = c;
-    b = x;
-  } else if (h < 4 / 6) {
-    r = 0;
-    g = x;
-    b = c;
-  } else if (h < 5 / 6) {
-    r = x;
-    g = 0;
-    b = c;
-  } else {
-    r = c;
-    g = 0;
-    b = x;
-  }
-
-  return `#${[r, g, b]
-    .map((v) =>
-      Math.round((v + m) * 255)
-        .toString(16)
-        .padStart(2, '0')
-    )
-    .join('')}`;
+  return chroma.hsl(h, s / 100, l / 100).hex();
 };
 
 export const createGradientBg = (colors: string[]): string =>
   `linear-gradient(90deg, ${colors.join(', ')})`;
 
-// Slider helper functions
+// Slider helper functions - much simpler with chroma
 export const generateHueGradient = (steps: number = 25): string[] => {
   return Array.from({ length: steps }, (_, i) => {
-    const hueValue = (360 * i) / (steps - 1);
-    return okhslToRgb(hueValue, 0.8, 0.6);
+    const hue = (360 * i) / (steps - 1);
+    return chroma.hsl(hue, 0.8, 0.6).hex();
   });
 };
 
@@ -60,103 +24,88 @@ export const generateAccentHueGradient = (
   steps: number = 25
 ): string[] => {
   return Array.from({ length: steps }, (_, i) => {
-    const adjustmentValue = minAdjustment + ((maxAdjustment - minAdjustment) * i) / (steps - 1);
-    const finalHue = (baseHue + adjustmentValue + 360) % 360;
-    return okhslToRgb(finalHue, 0.8, 0.6);
+    const adjustment = minAdjustment + ((maxAdjustment - minAdjustment) * i) / (steps - 1);
+    const finalHue = (baseHue + adjustment + 360) % 360;
+    return chroma.hsl(finalHue, 0.8, 0.6).hex();
   });
 };
 
-export const generateSaturationGradient = (hue: number): string[] => {
-  return [
-    '#808080', // Gray (0% saturation)
-    okhslToRgb(hue, 1.0, 0.5), // Full saturation
-  ];
-};
+export const generateSaturationGradient = (hue: number): string[] => [
+  chroma.hsl(hue, 0, 0.5).hex(), // Gray (0% saturation)
+  chroma.hsl(hue, 1.0, 0.5).hex(), // Full saturation
+];
 
-export const generateLightnessGradient = (hue: number, saturation: number): string[] => {
-  const satDecimal = saturation / 100;
-  const midColor = okhslToRgb(hue, satDecimal, 0.5);
-  return [
-    '#000000', // Black (0% lightness)
-    midColor, // Mid lightness with current hue/sat
-    '#ffffff', // White (100% lightness)
-  ];
-};
+export const generateLightnessGradient = (hue: number, saturation: number): string[] => [
+  chroma.hsl(hue, saturation / 100, 0).hex(), // Black
+  chroma.hsl(hue, saturation / 100, 0.5).hex(), // Mid
+  chroma.hsl(hue, saturation / 100, 1).hex(), // White
+];
 
-const normalizeHue = (hue: number): number => ((hue % 360) + 360) % 360;
-
-const createAccentHues = (baseHue: number): number[] => {
-  const base = normalizeHue(baseHue);
-
-  return [
-    normalizeHue(base), // red
-    normalizeHue(base + 30), // orange
-    normalizeHue(base + 60), // yellow
-    normalizeHue(base + 120), // green
-    normalizeHue(base + 165), // teal/cyan
-    normalizeHue(base + 210), // blue
-    normalizeHue(base + 270), // purple (changed from 300° to 270° - more blue-purple)
-    normalizeHue(base + 330), // pink (changed from 320° to 330° - more red-pink)
-  ];
-};
-
+// Simplified color generation using chroma's built-in color space handling
 export const generateColors = (params: ThemeParams): Base24Colors => {
   const isLight = params.bgLight > 50;
-  const [bgLightDecimal, bgSatDecimal, accentSatDecimal, accentLightDecimal, commentLightDecimal] =
-    [params.bgLight, params.bgSat, params.accentSat, params.accentLight, params.commentLight].map(
-      (v) => v / 100
-    );
 
-  const bgBase = bgLightDecimal;
-  const bgStep = isLight ? -0.05 : 0.08;
-  const selectionStep = isLight ? -0.15 : 0.2;
+  // Background colors
+  const bgBase = chroma.hsl(params.bgHue, params.bgSat / 100, params.bgLight / 100);
+  const base00 = bgBase.hex();
+  const base01 = bgBase
+    .brighten(isLight ? -0.3 : 0.4)
+    .saturate(0.2)
+    .hex();
+  const base02 = bgBase
+    .brighten(isLight ? -0.8 : 1.0)
+    .saturate(0.5)
+    .hex();
 
+  // Comments - use complementary hue for better contrast
+  const commentHue = (params.bgHue + (isLight ? 180 : 0)) % 360;
+  const base03 = chroma.hsl(commentHue, 0.15, params.commentLight / 100).hex();
+
+  // Foreground colors
   const fgBase = isLight ? 0.15 : 0.9;
-  const fgStep = isLight ? -0.05 : 0.03;
+  const base04 = chroma.hsl(params.bgHue, 0.2, isLight ? 0.45 : 0.65).hex();
+  const base05 = chroma.hsl(params.bgHue, 0.15, fgBase).hex();
+  const base06 = chroma.hsl(params.bgHue, 0.12, fgBase + (isLight ? -0.05 : 0.03)).hex();
+  const base07 = chroma.hsl(params.bgHue, 0.1, fgBase + (isLight ? -0.1 : 0.06)).hex();
 
-  const accentHues = createAccentHues(params.accentHue);
+  // Accent colors - distributed around color wheel
+  const accentHues = [0, 30, 60, 120, 165, 210, 270, 330].map(
+    (offset) => (params.accentHue + offset + 360) % 360
+  );
 
-  const commentHue = normalizeHue(params.bgHue + (isLight ? 180 : 0));
-  const commentSat = isLight ? 0.25 : 0.15;
+  const accentSat = params.accentSat / 100;
+  const accentLight = params.accentLight / 100;
+  const mutedSat = Math.max(0.05, accentSat - 0.25);
+  const mutedLight = Math.min(0.95, accentLight + 0.1);
 
-  // Calculate muted colors by applying systematic rule to accent colors
-  // Muted = Accent colors with -25% saturation, +10% lightness (or whatever offset you prefer)
-  const mutedSatDecimal = Math.max(0.05, accentSatDecimal - 0.25); // -25% saturation from accent
-  const mutedLightDecimal = Math.min(0.95, accentLightDecimal + 0.1); // +10% lighter than accent
+  // Generate accent and muted colors
+  const accents = accentHues.map((hue) => chroma.hsl(hue, accentSat, accentLight).hex());
+  const muted = accentHues.map((hue) => chroma.hsl(hue, mutedSat, mutedLight).hex());
 
-  const colorMap: Record<keyof Base24Colors, [number, number, number]> = {
-    base00: [params.bgHue, bgSatDecimal, bgBase],
-    base01: [params.bgHue, bgSatDecimal * 1.2, bgBase + bgStep],
-    base02: [params.bgHue, bgSatDecimal * 1.5, bgBase + selectionStep],
-    base03: [commentHue, commentSat, commentLightDecimal],
-    base04: [params.bgHue, 0.2, isLight ? 0.45 : 0.65],
-    base05: [params.bgHue, 0.15, fgBase],
-    base06: [params.bgHue, 0.12, fgBase + fgStep],
-    base07: [params.bgHue, 0.1, fgBase + fgStep * 2],
-    base08: [accentHues[0], accentSatDecimal, accentLightDecimal],
-    base09: [accentHues[1], accentSatDecimal, accentLightDecimal],
-    base0A: [accentHues[2], accentSatDecimal, accentLightDecimal],
-    base0B: [accentHues[3], accentSatDecimal, accentLightDecimal],
-    base0C: [accentHues[4], accentSatDecimal, accentLightDecimal],
-    base0D: [accentHues[5], accentSatDecimal, accentLightDecimal],
-    base0E: [accentHues[6], accentSatDecimal, accentLightDecimal],
-    base0F: [accentHues[7], accentSatDecimal, accentLightDecimal],
-    base10: [accentHues[0], mutedSatDecimal, mutedLightDecimal],
-    base11: [accentHues[1], mutedSatDecimal, mutedLightDecimal],
-    base12: [accentHues[2], mutedSatDecimal, mutedLightDecimal],
-    base13: [accentHues[3], mutedSatDecimal, mutedLightDecimal],
-    base14: [accentHues[4], mutedSatDecimal, mutedLightDecimal],
-    base15: [accentHues[5], mutedSatDecimal, mutedLightDecimal],
-    base16: [accentHues[6], mutedSatDecimal, mutedLightDecimal],
-    base17: [accentHues[7], mutedSatDecimal, mutedLightDecimal],
+  return {
+    base00,
+    base01,
+    base02,
+    base03,
+    base04,
+    base05,
+    base06,
+    base07,
+    base08: accents[0],
+    base09: accents[1],
+    base0A: accents[2],
+    base0B: accents[3],
+    base0C: accents[4],
+    base0D: accents[5],
+    base0E: accents[6],
+    base0F: accents[7],
+    base10: muted[0],
+    base11: muted[1],
+    base12: muted[2],
+    base13: muted[3],
+    base14: muted[4],
+    base15: muted[5],
+    base16: muted[6],
+    base17: muted[7],
   };
-
-  const result: Base24Colors = {} as Base24Colors;
-
-  (Object.keys(colorMap) as Array<keyof Base24Colors>).forEach((key) => {
-    const [h, s, l] = colorMap[key];
-    result[key] = okhslToRgb(h, s, l);
-  });
-
-  return result;
 };

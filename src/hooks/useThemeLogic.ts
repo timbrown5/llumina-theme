@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
-import { THEMES, FLAVORS } from '../constants/index.ts';
+import {
+  getBaseTheme,
+  getThemeParams,
+  getAllThemeKeys,
+  getAllFlavorKeys,
+  RAW_THEME_DATA,
+} from '../constants/index.ts';
 import { generateColors } from '../utils/colorUtils.ts';
 import {
   createNvimTheme,
@@ -39,14 +45,9 @@ const getSettingsKey = (theme: ThemeKey, flavor: FlavorKey) => `${theme}-${flavo
 export const useThemeLogic = (): ThemeLogic => {
   const [activeTheme, setActiveTheme] = useState<ThemeKey>('twilight');
   const [flavor, setFlavor] = useState<FlavorKey>('normal');
-  const [params, setParams] = useState<ThemeParams>(() => {
-    const flavorData = FLAVORS.twilight.normal;
-    const [accentHue, accentSat, accentLight, commentLight] = flavorData;
-    return { ...THEMES.twilight, accentHue, accentSat, accentLight, commentLight };
-  });
+  const [params, setParams] = useState<ThemeParams>(() => getThemeParams('twilight', 'normal'));
   const [copied, setCopied] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<TabKey>('colors');
-  const [uiTheme, setUiTheme] = useState<ThemeKey>('twilight');
   const [storedSettings, setStoredSettings] = useState<StoredSettings>({});
 
   useEffect(() => {
@@ -60,33 +61,15 @@ export const useThemeLogic = (): ThemeLogic => {
     if (stored) {
       setParams(stored);
     } else {
-      const flavorData = FLAVORS[activeTheme]?.[flavor] || FLAVORS[activeTheme].normal;
-      const [accentHue, accentSat, accentLight, commentLight] = flavorData;
-      const newParams = { ...THEMES[activeTheme], accentHue, accentSat, accentLight, commentLight };
+      const newParams = getThemeParams(activeTheme, flavor);
       setParams(newParams);
     }
   }, [activeTheme, flavor, storedSettings]);
 
   const colors = generateColors(params);
 
-  // Generate UI page colors - if UI theme matches active theme, use current params
-  // Otherwise use the base theme data with selected flavor
-  let pageColors;
-  if (uiTheme === activeTheme) {
-    // Same theme - use exact same parameters for perfect match
-    pageColors = generateColors(params);
-  } else {
-    // Different theme - use base theme data with current flavor
-    const uiFlavorData = FLAVORS[uiTheme]?.[flavor] || FLAVORS[uiTheme].normal;
-    const [uiAccentHue, uiAccentSat, uiAccentLight, uiCommentLight] = uiFlavorData;
-    pageColors = generateColors({
-      ...THEMES[uiTheme],
-      accentHue: uiAccentHue,
-      accentSat: uiAccentSat,
-      accentLight: uiAccentLight,
-      commentLight: uiCommentLight,
-    });
-  }
+  // UI always matches the theme being edited - simple and intuitive
+  const pageColors = colors;
 
   const updateParam = (key: keyof ThemeParams, value: number) => {
     const newParams = { ...params, [key]: value };
@@ -98,12 +81,6 @@ export const useThemeLogic = (): ThemeLogic => {
     saveSettings(newStoredSettings);
   };
 
-  const applyFlavor = (baseParams: ThemeParams, flavorType: FlavorKey): ThemeParams => {
-    const flavorData = FLAVORS[activeTheme]?.[flavorType] || FLAVORS[activeTheme].normal;
-    const [accentHue, accentSat, accentLight, commentLight] = flavorData;
-    return { ...baseParams, accentHue, accentSat, accentLight, commentLight };
-  };
-
   const switchTheme = (themeKey: ThemeKey) => {
     setActiveTheme(themeKey);
   };
@@ -113,7 +90,7 @@ export const useThemeLogic = (): ThemeLogic => {
   };
 
   const resetToFlavor = () => {
-    const newParams = applyFlavor({ ...THEMES[activeTheme] }, flavor);
+    const newParams = getThemeParams(activeTheme, flavor);
     setParams(newParams);
 
     const settingsKey = getSettingsKey(activeTheme, flavor);
@@ -123,7 +100,7 @@ export const useThemeLogic = (): ThemeLogic => {
   };
 
   const resetToTheme = () => {
-    const newParams = { ...THEMES[activeTheme] };
+    const newParams = getThemeParams(activeTheme, 'normal');
     setParams(newParams);
     setFlavor('normal');
 
@@ -145,10 +122,11 @@ export const useThemeLogic = (): ThemeLogic => {
   };
 
   const exportNvimTheme = () =>
-    copyToClipboard(createNvimTheme(colors, THEMES[activeTheme].name, flavor));
-  const exportTheme = () => copyToClipboard(createBase24Json(colors, THEMES[activeTheme].name));
+    copyToClipboard(createNvimTheme(colors, getBaseTheme(activeTheme).name, flavor));
+  const exportTheme = () =>
+    copyToClipboard(createBase24Json(colors, getBaseTheme(activeTheme).name));
   const exportStylixTheme = () =>
-    copyToClipboard(createStylixTheme(colors, THEMES[activeTheme].name, flavor));
+    copyToClipboard(createStylixTheme(colors, getBaseTheme(activeTheme).name, flavor));
   const copyThemeParams = () =>
     copyToClipboard(createThemeParams(activeTheme, flavor, params, colors));
 
@@ -158,7 +136,6 @@ export const useThemeLogic = (): ThemeLogic => {
     copied,
     activeTab,
     flavor,
-    uiTheme,
     colors,
     pageColors,
     updateParam,
@@ -167,7 +144,6 @@ export const useThemeLogic = (): ThemeLogic => {
     resetToFlavor,
     resetToTheme,
     setActiveTab,
-    setUiTheme,
     exportNvimTheme,
     exportTheme,
     exportStylixTheme,

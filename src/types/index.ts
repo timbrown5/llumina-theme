@@ -1,7 +1,13 @@
-export interface Theme {
+export interface BaseTheme {
   name: string;
   tagline: string;
   inspirations: string;
+  bgHue: number;
+  bgSat: number;
+  bgLight: number;
+}
+
+export interface ThemeParams {
   bgHue: number;
   bgSat: number;
   bgLight: number;
@@ -11,10 +17,7 @@ export interface Theme {
   commentLight: number;
 }
 
-export interface ThemeParams {
-  bgHue: number;
-  bgSat: number;
-  bgLight: number;
+export interface FlavorData {
   accentHue: number;
   accentSat: number;
   accentLight: number;

@@ -1,26 +1,107 @@
-import { THEMES, COLOR_GROUPS, TABS, FLAVORS, SLIDER_CONFIGS } from './constants/index.ts';
+import React from 'react';
+import {
+  getBaseTheme,
+  getAllThemeKeys,
+  getAllFlavorKeys,
+  COLOR_GROUPS,
+  TABS,
+  SLIDER_CONFIGS,
+  SLIDER_GENERATORS,
+} from './constants/index.ts';
 import { useThemeLogic } from './hooks/useThemeLogic.ts';
 import Button from './components/Button.tsx';
 import Slider from './components/Slider.tsx';
 import { ColorList, ColorPalette } from './components/ColorComponents.tsx';
 import SyntaxPreview from './components/SyntaxHighlighter.tsx';
 import UIPreview from './components/UIPreview.tsx';
-import {
-  okhslToRgb,
-  generateHueGradient,
-  generateAccentHueGradient,
-  generateSaturationGradient,
-  generateLightnessGradient,
-} from './utils/colorUtils.ts';
 import type { ThemeKey, FlavorKey, TabKey, Base24Colors, ThemeParams } from './types/index.ts';
+
+interface SelectorProps<T> {
+  title: string;
+  items: T[];
+  activeItem: T;
+  onSelect: (item: T) => void;
+  pageColors: Base24Colors;
+  renderItem: (item: T) => { label: string; description?: string; inspiration?: string };
+  variant?: 'theme' | 'flavor';
+  className?: string;
+}
+
+function Selector<T>({
+  title,
+  items,
+  activeItem,
+  onSelect,
+  pageColors,
+  renderItem,
+  variant = 'theme',
+  className = '',
+}: SelectorProps<T>) {
+  return (
+    <div className={`mb-6 ${className}`}>
+      <h3 style={{ color: pageColors.base0E }} className="text-center text-lg font-semibold mb-4">
+        {title}
+      </h3>
+
+      {variant === 'theme' ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
+          {items.map((item, index) => {
+            const rendered = renderItem(item);
+            return (
+              <button
+                key={index}
+                onClick={() => onSelect(item)}
+                title={rendered.inspiration}
+                style={{
+                  background: activeItem === item ? pageColors.base02 : pageColors.base01,
+                  border: `2px solid ${activeItem === item ? pageColors.base0D : pageColors.base02}`,
+                  color: pageColors.base05,
+                }}
+                className="rounded-lg p-3 cursor-pointer transition-all duration-200 hover:scale-105 text-left"
+              >
+                <div className="font-bold text-sm mb-1">{rendered.label}</div>
+                {rendered.description && (
+                  <div style={{ color: pageColors.base04 }} className="text-xs leading-tight">
+                    {rendered.description}
+                  </div>
+                )}
+                {activeItem === item && (
+                  <div style={{ color: pageColors.base0D }} className="mt-2 text-xs font-bold">
+                    ✨ Selected
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex gap-4 justify-center mb-4 flex-wrap">
+          {items.map((item, index) => {
+            const rendered = renderItem(item);
+            return (
+              <Button
+                key={index}
+                onClick={() => onSelect(item)}
+                variant={activeItem === item ? 'gradientWarm' : 'secondary'}
+                active={activeItem === item}
+                colors={pageColors}
+                className="text-sm py-3 px-6 capitalize font-semibold"
+              >
+                {rendered.label}
+              </Button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface HeaderProps {
   pageColors: Base24Colors;
-  uiTheme: ThemeKey;
-  setUiTheme: (theme: ThemeKey) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ pageColors, uiTheme, setUiTheme }) => (
+const Header: React.FC<HeaderProps> = ({ pageColors }) => (
   <div className="text-center mb-8">
     <h1
       className="text-4xl font-bold mb-3"
@@ -35,150 +116,6 @@ const Header: React.FC<HeaderProps> = ({ pageColors, uiTheme, setUiTheme }) => (
     <p style={{ color: pageColors.base04 }} className="mb-6">
       Create beautiful Base24 themes for Neovim and terminals
     </p>
-
-    {/* Compact UI Theme Selector */}
-    <div
-      style={{
-        background: pageColors.base01,
-        border: `1px solid ${pageColors.base02}`,
-      }}
-      className="rounded-lg p-3 mb-6 max-w-xl mx-auto"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <span style={{ color: pageColors.base04 }} className="text-sm font-medium">
-          🎨 UI Theme:
-        </span>
-
-        <div className="flex gap-2">
-          {Object.entries(THEMES).map(([key, theme]) => (
-            <button
-              key={key}
-              onClick={() => setUiTheme(key as ThemeKey)}
-              title={`${theme.name}: ${theme.tagline}`}
-              style={{
-                background:
-                  uiTheme === key
-                    ? `linear-gradient(135deg, ${pageColors.base0E}, ${pageColors.base0D})`
-                    : pageColors.base02,
-                border: `1px solid ${uiTheme === key ? pageColors.base0D : pageColors.base03}`,
-                color: uiTheme === key ? pageColors.base00 : pageColors.base05,
-              }}
-              className="px-3 py-1 rounded text-sm font-medium transition-all duration-200 hover:scale-105"
-            >
-              {theme.name.replace('Lumina ', '')}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ color: pageColors.base04 }} className="text-xs mt-2 text-center italic">
-        Currently previewing:{' '}
-        <strong style={{ color: pageColors.base05 }}>{THEMES[uiTheme].name}</strong>
-      </div>
-    </div>
-  </div>
-);
-
-interface ThemeSelectorProps {
-  activeTheme: ThemeKey;
-  switchTheme: (themeKey: ThemeKey) => void;
-  pageColors: Base24Colors;
-}
-
-const ThemeSelector: React.FC<ThemeSelectorProps> = ({ activeTheme, switchTheme, pageColors }) => (
-  <div className="mb-6">
-    <h3 style={{ color: pageColors.base0E }} className="text-center text-lg font-semibold mb-4">
-      🎯 Select Base Theme to Customize
-    </h3>
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
-      {Object.entries(THEMES).map(([key, theme]) => (
-        <button
-          key={key}
-          onClick={() => switchTheme(key as ThemeKey)}
-          title={`${theme.tagline} - Inspired by: ${theme.inspirations}`}
-          style={{
-            background: activeTheme === key ? pageColors.base02 : pageColors.base01,
-            border: `2px solid ${activeTheme === key ? pageColors.base0D : pageColors.base02}`,
-            color: pageColors.base05,
-          }}
-          className="rounded-lg p-3 cursor-pointer transition-all duration-200 hover:scale-105 text-left"
-        >
-          <div className="font-bold text-sm mb-1">{theme.name}</div>
-          <div style={{ color: pageColors.base04 }} className="text-xs leading-tight">
-            {theme.tagline}
-          </div>
-          {activeTheme === key && (
-            <div style={{ color: pageColors.base0D }} className="mt-2 text-xs font-bold">
-              ✨ Selected
-            </div>
-          )}
-        </button>
-      ))}
-    </div>
-  </div>
-);
-
-interface ThemeInfoProps {
-  activeTheme: ThemeKey;
-  pageColors: Base24Colors;
-}
-
-const ThemeInfo: React.FC<ThemeInfoProps> = ({ activeTheme, pageColors }) => (
-  <div
-    style={{
-      background: pageColors.base01,
-      border: `1px solid ${pageColors.base02}`,
-    }}
-    className="rounded-xl p-4 mb-6 text-center max-w-2xl mx-auto"
-  >
-    <div style={{ color: pageColors.base05 }} className="text-lg font-semibold mb-2">
-      {THEMES[activeTheme].name}
-    </div>
-    <div style={{ color: pageColors.base04 }} className="text-sm mb-2">
-      {THEMES[activeTheme].tagline}
-    </div>
-    <div style={{ color: pageColors.base04 }} className="text-xs italic">
-      Inspiration: {THEMES[activeTheme].inspirations}
-    </div>
-  </div>
-);
-
-interface FlavorSelectorProps {
-  activeTheme: ThemeKey;
-  flavor: FlavorKey;
-  switchFlavor: (flavor: FlavorKey) => void;
-  pageColors: Base24Colors;
-}
-
-const FlavorSelector: React.FC<FlavorSelectorProps> = ({
-  activeTheme,
-  flavor,
-  switchFlavor,
-  pageColors,
-}) => (
-  <div className="mb-8">
-    <h4 style={{ color: pageColors.base0E }} className="text-center text-lg font-semibold mb-4">
-      🎭 Choose Flavor Intensity
-    </h4>
-    <div className="flex gap-4 justify-center mb-4 flex-wrap">
-      {Object.keys(FLAVORS[activeTheme]).map((flavorOption) => (
-        <Button
-          key={flavorOption}
-          onClick={() => switchFlavor(flavorOption as FlavorKey)}
-          variant={flavor === flavorOption ? 'gradientWarm' : 'secondary'}
-          active={flavor === flavorOption}
-          colors={pageColors}
-          className="text-sm py-3 px-6 capitalize font-semibold"
-        >
-          {flavorOption === 'high-contrast' ? 'High Contrast' : flavorOption}
-        </Button>
-      ))}
-    </div>
-
-    <div style={{ color: pageColors.base04 }} className="text-center text-xs max-w-lg mx-auto">
-      <strong>Pastel:</strong> Gentle, softer colors • <strong>Normal:</strong> Balanced everyday
-      use • <strong>High-Contrast:</strong> Bold, maximum readability
-    </div>
   </div>
 );
 
@@ -199,81 +136,17 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
   flavor,
   pageColors,
 }) => {
-  // Calculate comment hue (background hue + 180° for light themes, same for dark)
-  const isLight = params.bgLight > 50;
-  const commentHue = (params.bgHue + (isLight ? 180 : 0) + 360) % 360;
+  const getSliderProps = (configKey: keyof ThemeParams) => {
+    const generator = SLIDER_GENERATORS[configKey];
+    const gradient = generator.gradient(params);
+    const preview = generator.preview
+      ? generator.preview(params[configKey], params)
+      : { color: undefined, label: undefined };
 
-  // Helper function to generate slider props for different types
-  const getSliderProps = (
-    configKey: keyof ThemeParams,
-    config: (typeof SLIDER_CONFIGS.main)[0]
-  ) => {
-    const value = params[configKey];
-
-    if (config.type === 'hue') {
-      if (configKey === 'bgHue') {
-        // Background hue: full color wheel
-        return {
-          gradientColors: generateHueGradient(),
-          previewColor: okhslToRgb(value, 0.8, 0.6),
-          previewLabel: `${value}°`,
-        };
-      } else if (configKey === 'accentHue') {
-        // Accent hue adjustment: show adjustment from red
-        return {
-          gradientColors: generateAccentHueGradient(0, -180, 180),
-          previewColor: okhslToRgb((0 + value + 360) % 360, 0.8, 0.6),
-          previewLabel: `Red + ${value > 0 ? '+' : ''}${value}° = ${(0 + value + 360) % 360}°`,
-        };
-      }
-    } else if (config.type === 'saturation') {
-      if (configKey === 'bgSat') {
-        // Background saturation
-        return {
-          gradientColors: generateSaturationGradient(params.bgHue),
-          previewColor: undefined,
-          previewLabel: undefined,
-        };
-      } else if (configKey === 'accentSat') {
-        // Accent saturation: use adjusted red hue
-        const accentHue = (0 + params.accentHue + 360) % 360;
-        return {
-          gradientColors: generateSaturationGradient(accentHue),
-          previewColor: undefined,
-          previewLabel: undefined,
-        };
-      }
-    } else if (config.type === 'lightness') {
-      if (configKey === 'bgLight') {
-        // Background lightness
-        return {
-          gradientColors: generateLightnessGradient(params.bgHue, params.bgSat),
-          previewColor: undefined,
-          previewLabel: undefined,
-        };
-      } else if (configKey === 'accentLight') {
-        // Accent lightness: use adjusted red hue
-        const accentHue = (0 + params.accentHue + 360) % 360;
-        return {
-          gradientColors: generateLightnessGradient(accentHue, params.accentSat),
-          previewColor: undefined,
-          previewLabel: undefined,
-        };
-      } else if (configKey === 'commentLight') {
-        // Comment lightness: use comment hue
-        return {
-          gradientColors: generateLightnessGradient(commentHue, 15),
-          previewColor: undefined,
-          previewLabel: undefined,
-        };
-      }
-    }
-
-    // Fallback
     return {
-      gradientColors: ['#808080'],
-      previewColor: undefined,
-      previewLabel: undefined,
+      gradientColors: gradient,
+      previewColor: preview.color,
+      previewLabel: preview.label,
     };
   };
 
@@ -289,13 +162,12 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
         🎨 Customize Colors
       </h3>
 
-      {/* Main Colors Section */}
       <div className="mb-5">
         <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
           Background & UI Colors
         </h4>
         {SLIDER_CONFIGS.main.map((config) => {
-          const sliderProps = getSliderProps(config.key, config);
+          const sliderProps = getSliderProps(config.key);
           return (
             <Slider
               key={config.key}
@@ -313,13 +185,12 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
         })}
       </div>
 
-      {/* Accent Colors Section */}
       <div className="mb-5">
         <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
           Syntax & Accent Colors
         </h4>
         {SLIDER_CONFIGS.accent.map((config) => {
-          const sliderProps = getSliderProps(config.key, config);
+          const sliderProps = getSliderProps(config.key);
           return (
             <Slider
               key={config.key}
@@ -337,13 +208,12 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
         })}
       </div>
 
-      {/* Comments Section */}
       <div className="mb-5">
         <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
           Comments & Subtle Text
         </h4>
         {SLIDER_CONFIGS.comment.map((config) => {
-          const sliderProps = getSliderProps(config.key, config);
+          const sliderProps = getSliderProps(config.key);
           return (
             <Slider
               key={config.key}
@@ -361,7 +231,6 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
         })}
       </div>
 
-      {/* Reset Buttons */}
       <div className="flex gap-2">
         <Button
           onClick={resetToFlavor}
@@ -458,6 +327,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ colors, activeTab, setActiv
   );
 };
 
+// Export Panel Component
 interface ExportPanelProps {
   exportNvimTheme: () => void;
   exportTheme: () => void;
@@ -554,6 +424,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
   </div>
 );
 
+// Main App Component
 const App: React.FC = () => {
   const themeLogic = useThemeLogic();
 
@@ -566,24 +437,46 @@ const App: React.FC = () => {
       }}
     >
       <div className="max-w-6xl mx-auto">
-        <Header
+        <Header pageColors={themeLogic.pageColors} />
+
+        {/* OPTIMIZATION 4: Generic Theme Selector */}
+        <Selector
+          title="🎯 Select Base Theme to Customize"
+          items={getAllThemeKeys()}
+          activeItem={themeLogic.activeTheme}
+          onSelect={themeLogic.switchTheme}
           pageColors={themeLogic.pageColors}
-          uiTheme={themeLogic.uiTheme}
-          setUiTheme={themeLogic.setUiTheme}
+          variant="theme"
+          renderItem={(themeKey) => {
+            const theme = getBaseTheme(themeKey);
+            return {
+              label: theme.name,
+              description: theme.tagline,
+              inspiration: `${theme.tagline} - Inspired by: ${theme.inspirations}`,
+            };
+          }}
         />
 
-        <ThemeSelector
-          activeTheme={themeLogic.activeTheme}
-          switchTheme={themeLogic.switchTheme}
+        {/* OPTIMIZATION 4: Generic Flavor Selector */}
+        <Selector
+          title="🎭 Choose Flavor Intensity"
+          items={getAllFlavorKeys()}
+          activeItem={themeLogic.flavor}
+          onSelect={themeLogic.switchFlavor}
           pageColors={themeLogic.pageColors}
+          variant="flavor"
+          renderItem={(flavorKey) => ({
+            label: flavorKey === 'high-contrast' ? 'High Contrast' : flavorKey,
+          })}
         />
 
-        <FlavorSelector
-          activeTheme={themeLogic.activeTheme}
-          flavor={themeLogic.flavor}
-          switchFlavor={themeLogic.switchFlavor}
-          pageColors={themeLogic.pageColors}
-        />
+        <div
+          style={{ color: themeLogic.pageColors.base04 }}
+          className="text-center text-xs max-w-lg mx-auto mb-8"
+        >
+          <strong>Pastel:</strong> Gentle, softer colors • <strong>Normal:</strong> Balanced
+          everyday use • <strong>High-Contrast:</strong> Bold, maximum readability
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <CustomizePanel
