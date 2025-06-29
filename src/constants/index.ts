@@ -23,9 +23,24 @@ export const RAW_THEME_DATA = {
     bgSat: 25,
     bgLight: 6,
     flavors: {
-      pastel: { accentHue: 0, accentSat: 85, accentLight: 80, commentLight: 55 },
-      normal: { accentHue: 0, accentSat: 90, accentLight: 70, commentLight: 50 },
-      'high-contrast': { accentHue: 0, accentSat: 95, accentLight: 50, commentLight: 60 },
+      muted: {
+        accentHue: 0,
+        accentSat: 85,
+        accentLight: 80,
+        commentLight: 55,
+      },
+      balanced: {
+        accentHue: 0,
+        accentSat: 90,
+        accentLight: 70,
+        commentLight: 50,
+      },
+      bold: {
+        accentHue: 0,
+        accentSat: 95,
+        accentLight: 50,
+        commentLight: 60,
+      },
     },
   },
   twilight: {
@@ -36,9 +51,24 @@ export const RAW_THEME_DATA = {
     bgSat: 40,
     bgLight: 12,
     flavors: {
-      pastel: { accentHue: 0, accentSat: 85, accentLight: 75, commentLight: 65 },
-      normal: { accentHue: 0, accentSat: 90, accentLight: 70, commentLight: 55 },
-      'high-contrast': { accentHue: 0, accentSat: 95, accentLight: 60, commentLight: 60 },
+      muted: {
+        accentHue: 0,
+        accentSat: 85,
+        accentLight: 75,
+        commentLight: 65,
+      },
+      balanced: {
+        accentHue: 0,
+        accentSat: 90,
+        accentLight: 70,
+        commentLight: 55,
+      },
+      bold: {
+        accentHue: 0,
+        accentSat: 95,
+        accentLight: 60,
+        commentLight: 60,
+      },
     },
   },
   dawn: {
@@ -49,9 +79,24 @@ export const RAW_THEME_DATA = {
     bgSat: 45,
     bgLight: 15,
     flavors: {
-      pastel: { accentHue: 20, accentSat: 70, accentLight: 80, commentLight: 65 },
-      normal: { accentHue: 15, accentSat: 85, accentLight: 70, commentLight: 55 },
-      'high-contrast': { accentHue: 10, accentSat: 95, accentLight: 60, commentLight: 50 },
+      muted: {
+        accentHue: 20,
+        accentSat: 70,
+        accentLight: 80,
+        commentLight: 65,
+      },
+      balanced: {
+        accentHue: 15,
+        accentSat: 85,
+        accentLight: 70,
+        commentLight: 55,
+      },
+      bold: {
+        accentHue: 10,
+        accentSat: 95,
+        accentLight: 60,
+        commentLight: 50,
+      },
     },
   },
   noon: {
@@ -59,12 +104,27 @@ export const RAW_THEME_DATA = {
     tagline: 'Golden sunshine and natural warmth',
     inspirations: 'Golden hour, warm days, contentment, beach afternoons, lazy picnics, comfort',
     bgHue: 50,
-    bgSat: 35,
-    bgLight: 94,
+    bgSat: 100,
+    bgLight: 98,
     flavors: {
-      pastel: { accentHue: -20, accentSat: 50, accentLight: 60, commentLight: 50 },
-      normal: { accentHue: -30, accentSat: 70, accentLight: 45, commentLight: 40 },
-      'high-contrast': { accentHue: -35, accentSat: 90, accentLight: 40, commentLight: 30 },
+      muted: {
+        accentHue: -15,
+        accentSat: 80,
+        accentLight: 55,
+        commentLight: 50,
+      },
+      balanced: {
+        accentHue: -15,
+        accentSat: 90,
+        accentLight: 45,
+        commentLight: 40,
+      },
+      bold: {
+        accentHue: -35,
+        accentSat: 100,
+        accentLight: 35,
+        commentLight: 30,
+      },
     },
   },
 } as const;
@@ -102,22 +162,35 @@ export const getFlavorData = (theme: ThemeKey, flavor: FlavorKey): FlavorData =>
 };
 
 export const getThemeParams = (theme: ThemeKey, flavor: FlavorKey) => {
-  const baseTheme = getBaseTheme(theme);
-  const flavorData = getFlavorData(theme, flavor);
+  try {
+    const baseTheme = getBaseTheme(theme);
+    const flavorData = getFlavorData(theme, flavor);
 
-  return {
-    bgHue: baseTheme.bgHue,
-    bgSat: baseTheme.bgSat,
-    bgLight: baseTheme.bgLight,
-    accentHue: flavorData.accentHue,
-    accentSat: flavorData.accentSat,
-    accentLight: flavorData.accentLight,
-    commentLight: flavorData.commentLight,
-  };
+    return {
+      bgHue: baseTheme.bgHue,
+      bgSat: baseTheme.bgSat,
+      bgLight: baseTheme.bgLight,
+      accentHue: flavorData.accentHue,
+      accentSat: flavorData.accentSat,
+      accentLight: flavorData.accentLight,
+      commentLight: flavorData.commentLight,
+    };
+  } catch (error) {
+    console.error('Error getting theme params:', error, { theme, flavor });
+    return {
+      bgHue: 200,
+      bgSat: 20,
+      bgLight: 20,
+      accentHue: 0,
+      accentSat: 70,
+      accentLight: 60,
+      commentLight: 40,
+    };
+  }
 };
 
 export const getAllThemeKeys = (): ThemeKey[] => Object.keys(RAW_THEME_DATA) as ThemeKey[];
-export const getAllFlavorKeys = (): FlavorKey[] => ['pastel', 'normal', 'high-contrast'];
+export const getAllFlavorKeys = (): FlavorKey[] => ['muted', 'balanced', 'bold'];
 
 interface SliderGenerator {
   gradient: (params: ThemeParams) => string[];

@@ -7,7 +7,8 @@ interface ExportTemplate {
     themeName: string,
     flavor?: FlavorKey,
     params?: ThemeParams,
-    activeTheme?: ThemeKey
+    activeTheme?: ThemeKey,
+    allParams?: { [key in FlavorKey]: ThemeParams }
   ) => string;
 }
 
@@ -131,27 +132,32 @@ ${Object.entries(colors)
       themeName: string,
       flavor?: FlavorKey,
       params?: ThemeParams,
-      activeTheme?: ThemeKey
+      activeTheme?: ThemeKey,
+      allParams?: { [key in FlavorKey]: ThemeParams }
     ) => {
       const themeData = JSON.parse(JSON.stringify(RAW_THEME_DATA));
       const currentTheme = themeData[activeTheme!];
 
-      if (currentTheme && params) {
-        currentTheme.bgHue = params.bgHue;
-        currentTheme.bgSat = params.bgSat;
-        currentTheme.bgLight = params.bgLight;
-
-        if (currentTheme.flavors && currentTheme.flavors[flavor!]) {
-          currentTheme.flavors[flavor!] = {
-            accentHue: params.accentHue,
-            accentSat: params.accentSat,
-            accentLight: params.accentLight,
-            commentLight: params.commentLight,
-          };
+      if (currentTheme && allParams) {
+        if (params) {
+          currentTheme.bgHue = params.bgHue;
+          currentTheme.bgSat = params.bgSat;
+          currentTheme.bgLight = params.bgLight;
         }
+
+        Object.entries(allParams).forEach(([flavorKey, flavorParams]) => {
+          if (currentTheme.flavors && currentTheme.flavors[flavorKey as FlavorKey]) {
+            currentTheme.flavors[flavorKey as FlavorKey] = {
+              accentHue: flavorParams.accentHue,
+              accentSat: flavorParams.accentSat,
+              accentLight: flavorParams.accentLight,
+              commentLight: flavorParams.commentLight,
+            };
+          }
+        });
       }
 
-      return `const themeData = ${JSON.stringify(themeData, null, 2)} as const;`;
+      return `export const RAW_THEME_DATA = ${JSON.stringify(themeData, null, 2)} as const;`;
     },
   },
 };
@@ -205,5 +211,6 @@ export const createThemeParams = (
   activeTheme: ThemeKey,
   flavor: FlavorKey,
   params: ThemeParams,
-  colors: Base24Colors
-): string => EXPORT_TEMPLATES.params.generate(colors, '', flavor, params, activeTheme);
+  colors: Base24Colors,
+  allParams?: { [key in FlavorKey]: ThemeParams }
+): string => EXPORT_TEMPLATES.params.generate(colors, '', flavor, params, activeTheme, allParams);

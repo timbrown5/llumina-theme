@@ -38,8 +38,8 @@ const getSettingsKey = (theme: ThemeKey, flavor: FlavorKey) => `${theme}-${flavo
 
 export const useThemeLogic = (): ThemeLogic => {
   const [activeTheme, setActiveTheme] = useState<ThemeKey>('twilight');
-  const [flavor, setFlavor] = useState<FlavorKey>('normal');
-  const [params, setParams] = useState<ThemeParams>(() => getThemeParams('twilight', 'normal'));
+  const [flavor, setFlavor] = useState<FlavorKey>('balanced');
+  const [params, setParams] = useState<ThemeParams>(() => getThemeParams('twilight', 'balanced'));
   const [copied, setCopied] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<TabKey>('colors');
   const [storedSettings, setStoredSettings] = useState<StoredSettings>({});
@@ -74,7 +74,12 @@ export const useThemeLogic = (): ThemeLogic => {
   };
 
   const switchTheme = (themeKey: ThemeKey) => {
-    setActiveTheme(themeKey);
+    try {
+      console.log('Switching to theme:', themeKey);
+      setActiveTheme(themeKey);
+    } catch (error) {
+      console.error('Error switching theme:', error);
+    }
   };
 
   const switchFlavor = (newFlavor: FlavorKey) => {
@@ -92,19 +97,21 @@ export const useThemeLogic = (): ThemeLogic => {
   };
 
   const resetToTheme = () => {
-    const newParams = getThemeParams(activeTheme, 'normal');
-    setParams(newParams);
-    setFlavor('normal');
+    console.log('Reset theme called for:', activeTheme);
 
-    // Clear all stored settings for this theme
-    const newStoredSettings = { ...storedSettings };
-    Object.keys(newStoredSettings).forEach((key) => {
-      if (key.startsWith(activeTheme)) {
-        delete newStoredSettings[key];
-      }
-    });
-    setStoredSettings(newStoredSettings);
-    saveSettings(newStoredSettings);
+    // Clear ALL stored settings
+    setStoredSettings({});
+    saveSettings({});
+    sessionStorage.removeItem(STORAGE_KEY);
+
+    // Get fresh params directly from constants
+    const freshParams = getThemeParams(activeTheme, 'balanced');
+    console.log('Fresh params from constants:', freshParams);
+
+    setParams(freshParams);
+    setFlavor('balanced');
+
+    console.log('Reset complete');
   };
 
   const copyToClipboard = (content: string) => {
@@ -120,8 +127,21 @@ export const useThemeLogic = (): ThemeLogic => {
     copyToClipboard(createBase24Json(colors, getBaseTheme(activeTheme).name));
   const exportStylixTheme = () =>
     copyToClipboard(createStylixTheme(colors, getBaseTheme(activeTheme).name, flavor));
-  const copyThemeParams = () =>
-    copyToClipboard(createThemeParams(activeTheme, flavor, params, colors));
+  const copyThemeParams = () => {
+    // Collect all flavor params for the current theme
+    const allFlavorParams: { [key in FlavorKey]: ThemeParams } = {
+      muted:
+        storedSettings[getSettingsKey(activeTheme, 'muted')] ||
+        getThemeParams(activeTheme, 'muted'),
+      balanced:
+        storedSettings[getSettingsKey(activeTheme, 'balanced')] ||
+        getThemeParams(activeTheme, 'balanced'),
+      bold:
+        storedSettings[getSettingsKey(activeTheme, 'bold')] || getThemeParams(activeTheme, 'bold'),
+    };
+
+    copyToClipboard(createThemeParams(activeTheme, flavor, params, colors, allFlavorParams));
+  };
 
   return {
     activeTheme,

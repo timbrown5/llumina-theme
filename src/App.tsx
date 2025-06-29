@@ -430,7 +430,10 @@ const App: React.FC = () => {
     <div
       className="min-h-screen p-5 font-sans"
       style={{
-        background: `linear-gradient(135deg, ${themeLogic.pageColors.base00}, ${themeLogic.pageColors.base01})`,
+        background:
+          themeLogic.params.bgLight > 50
+            ? `linear-gradient(135deg, ${themeLogic.pageColors.base00}, ${themeLogic.pageColors.base02})`
+            : `linear-gradient(135deg, ${themeLogic.pageColors.base00}, ${themeLogic.pageColors.base01})`,
         color: themeLogic.pageColors.base05,
       }}
     >
@@ -462,7 +465,7 @@ const App: React.FC = () => {
           pageColors={themeLogic.pageColors}
           variant="flavor"
           renderItem={(flavorKey) => ({
-            label: flavorKey === 'high-contrast' ? 'High Contrast' : flavorKey,
+            label: flavorKey,
           })}
         />
 
@@ -470,8 +473,8 @@ const App: React.FC = () => {
           style={{ color: themeLogic.pageColors.base04 }}
           className="text-center text-xs max-w-lg mx-auto mb-8"
         >
-          <strong>Pastel:</strong> Gentle, softer colors • <strong>Normal:</strong> Balanced
-          everyday use • <strong>High-Contrast:</strong> Bold, maximum readability
+          <strong>Muted:</strong> Gentle, softer colors • <strong>Balanced:</strong> Harmonious
+          everyday use • <strong>Bold:</strong> High contrast, maximum readability
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">

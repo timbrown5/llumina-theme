@@ -52,7 +52,7 @@ export interface Base24Colors {
 }
 
 export type ThemeKey = 'midnight' | 'twilight' | 'dawn' | 'noon';
-export type FlavorKey = 'pastel' | 'normal' | 'high-contrast';
+export type FlavorKey = 'muted' | 'balanced' | 'bold';
 export type TabKey = 'colors' | 'ui-preview' | 'javascript' | 'python' | 'cpp' | 'terminal';
 export type SliderType = 'hue' | 'saturation' | 'lightness';
 
