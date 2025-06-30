@@ -12,9 +12,9 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
         color: colors.base05,
         border: `1px solid ${colors.base02}`,
       }}
-      className="rounded-lg p-4 space-y-4"
+      className="rounded-lg p-4 space-y-4 text-base"
     >
-      <h4 className="text-sm font-semibold mb-4" style={{ color: colors.base0E }}>
+      <h4 className="text-base font-semibold mb-4" style={{ color: colors.base0E }}>
         🖥️ UI Elements Preview
       </h4>
 
@@ -25,7 +25,7 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
         }}
         className="rounded border p-3 space-y-3"
       >
-        <div className="text-xs font-medium mb-2" style={{ color: colors.base04 }}>
+        <div className="text-sm font-medium mb-2" style={{ color: colors.base04 }}>
           Code Editor
         </div>
 
@@ -35,7 +35,7 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
               background: colors.base02,
               color: colors.base05,
             }}
-            className="px-3 py-1 rounded-t text-xs"
+            className="px-3 py-1 rounded-t text-sm"
           >
             main.js
           </div>
@@ -44,7 +44,7 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
               background: colors.base01,
               color: colors.base04,
             }}
-            className="px-3 py-1 rounded-t text-xs"
+            className="px-3 py-1 rounded-t text-sm"
           >
             utils.ts
           </div>
@@ -52,7 +52,7 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
 
         <div
           style={{ background: colors.base00 }}
-          className="rounded p-2 text-xs font-mono leading-relaxed"
+          className="rounded p-2 text-sm font-mono leading-relaxed"
         >
           <div>
             <span style={{ color: colors.base03 }}>// Function to calculate theme colors</span>
@@ -95,10 +95,10 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
         }}
         className="rounded p-3"
       >
-        <div className="text-xs font-medium mb-2" style={{ color: colors.base04 }}>
+        <div className="text-sm font-medium mb-2" style={{ color: colors.base04 }}>
           Terminal
         </div>
-        <div className="text-xs font-mono space-y-1">
+        <div className="text-sm font-mono space-y-1">
           <div>
             <span style={{ color: colors.base0B }}>user@machine</span>
             <span style={{ color: colors.base05 }}>:</span>
@@ -113,7 +113,7 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
       </div>
 
       <div className="space-y-3">
-        <div className="text-xs font-medium" style={{ color: colors.base04 }}>
+        <div className="text-sm font-medium" style={{ color: colors.base04 }}>
           Interface Elements
         </div>
 
@@ -123,7 +123,7 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
               background: colors.base0D,
               color: colors.base00,
             }}
-            className="px-3 py-1 rounded text-xs font-medium"
+            className="px-3 py-1 rounded text-sm font-medium"
           >
             Primary
           </button>
@@ -133,7 +133,7 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
               color: colors.base05,
               border: `1px solid ${colors.base03}`,
             }}
-            className="px-3 py-1 rounded text-xs"
+            className="px-3 py-1 rounded text-sm"
           >
             Secondary
           </button>
@@ -142,7 +142,7 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
               background: colors.base08,
               color: colors.base00,
             }}
-            className="px-3 py-1 rounded text-xs"
+            className="px-3 py-1 rounded text-sm"
           >
             Danger
           </button>
@@ -151,7 +151,7 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
               background: colors.base0B,
               color: colors.base00,
             }}
-            className="px-3 py-1 rounded text-xs"
+            className="px-3 py-1 rounded text-sm"
           >
             Success
           </button>
@@ -166,17 +166,17 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
               border: `1px solid ${colors.base02}`,
               color: colors.base05,
             }}
-            className="w-full px-2 py-1 rounded text-xs outline-none"
+            className="w-full px-2 py-1 rounded text-sm outline-none"
           />
           <div className="flex items-center gap-2">
-            <input type="checkbox" style={{ accentColor: colors.base0D }} className="text-xs" />
-            <span className="text-xs" style={{ color: colors.base05 }}>
+            <input type="checkbox" style={{ accentColor: colors.base0D }} className="text-sm" />
+            <span className="text-sm" style={{ color: colors.base05 }}>
               Enable notifications
             </span>
           </div>
         </div>
 
-        <div className="flex gap-4 text-xs">
+        <div className="flex gap-4 text-sm">
           <div className="flex items-center gap-1">
             <div style={{ background: colors.base0B }} className="w-2 h-2 rounded-full" />
             <span style={{ color: colors.base05 }}>Online</span>
@@ -192,7 +192,7 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
         </div>
 
         <div className="space-y-1">
-          <div className="text-xs" style={{ color: colors.base04 }}>
+          <div className="text-sm" style={{ color: colors.base04 }}>
             Loading Progress
           </div>
           <div
@@ -214,10 +214,10 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
           }}
           className="p-2 rounded"
         >
-          <div className="text-xs font-medium" style={{ color: colors.base0B }}>
+          <div className="text-sm font-medium" style={{ color: colors.base0B }}>
             Success
           </div>
-          <div className="text-xs" style={{ color: colors.base05 }}>
+          <div className="text-sm" style={{ color: colors.base05 }}>
             Theme applied successfully!
           </div>
         </div>
@@ -230,17 +230,17 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
           }}
           className="p-2 rounded"
         >
-          <div className="text-xs font-medium" style={{ color: colors.base0A }}>
+          <div className="text-sm font-medium" style={{ color: colors.base0A }}>
             Warning
           </div>
-          <div className="text-xs" style={{ color: colors.base05 }}>
+          <div className="text-sm" style={{ color: colors.base05 }}>
             Some settings may need manual adjustment.
           </div>
         </div>
       </div>
 
       <div className="pt-2 border-t" style={{ borderColor: colors.base02 }}>
-        <div className="text-xs font-medium mb-2" style={{ color: colors.base04 }}>
+        <div className="text-sm font-medium mb-2" style={{ color: colors.base04 }}>
           Color Palette
         </div>
         <div className="grid grid-cols-8 gap-1">

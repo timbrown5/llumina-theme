@@ -126,6 +126,7 @@ interface CustomizePanelProps {
   resetToTheme: () => void;
   flavor: FlavorKey;
   pageColors: Base24Colors;
+  onExpandChange: (expanded: boolean) => void;
 }
 
 const CustomizePanel: React.FC<CustomizePanelProps> = ({
@@ -135,7 +136,15 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
   resetToTheme,
   flavor,
   pageColors,
+  onExpandChange,
 }) => {
+  const [isExpanded, setIsExpanded] = React.useState(true);
+
+  const handleExpandChange = (expanded: boolean) => {
+    setIsExpanded(expanded);
+    onExpandChange(expanded);
+  };
+
   const getSliderProps = (configKey: keyof ThemeParams) => {
     const generator = SLIDER_GENERATORS[configKey];
     const gradient = generator.gradient(params);
@@ -158,98 +167,107 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
       }}
       className="rounded-xl p-5"
     >
-      <h3 style={{ color: pageColors.base0E }} className="mb-5 text-lg font-semibold">
-        🎨 Customize Colors
-      </h3>
+      <button
+        onClick={() => handleExpandChange(!isExpanded)}
+        className="w-full flex items-center justify-between mb-5 text-left"
+        style={{ color: pageColors.base0E }}
+      >
+        <h3 className="text-lg font-semibold">🎨 Customize Colors</h3>
+        <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
+      </button>
 
-      <div className="mb-5">
-        <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
-          Background & UI Colors
-        </h4>
-        {SLIDER_CONFIGS.main.map((config) => {
-          const sliderProps = getSliderProps(config.key);
-          return (
-            <Slider
-              key={config.key}
-              label={config.label}
-              value={params[config.key]}
-              min={config.min}
-              max={config.max}
-              type={config.type}
-              gradientColors={sliderProps.gradientColors}
-              previewColor={sliderProps.previewColor}
-              previewLabel={sliderProps.previewLabel}
-              onChange={(v) => updateParam(config.key, v)}
-            />
-          );
-        })}
-      </div>
+      {isExpanded && (
+        <>
+          <div className="mb-5">
+            <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
+              Background & UI Colors
+            </h4>
+            {SLIDER_CONFIGS.main.map((config) => {
+              const sliderProps = getSliderProps(config.key);
+              return (
+                <Slider
+                  key={config.key}
+                  label={config.label}
+                  value={params[config.key]}
+                  min={config.min}
+                  max={config.max}
+                  type={config.type}
+                  gradientColors={sliderProps.gradientColors}
+                  previewColor={sliderProps.previewColor}
+                  previewLabel={sliderProps.previewLabel}
+                  onChange={(v) => updateParam(config.key, v)}
+                />
+              );
+            })}
+          </div>
 
-      <div className="mb-5">
-        <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
-          Syntax & Accent Colors
-        </h4>
-        {SLIDER_CONFIGS.accent.map((config) => {
-          const sliderProps = getSliderProps(config.key);
-          return (
-            <Slider
-              key={config.key}
-              label={config.label}
-              value={params[config.key]}
-              min={config.min}
-              max={config.max}
-              type={config.type}
-              gradientColors={sliderProps.gradientColors}
-              previewColor={sliderProps.previewColor}
-              previewLabel={sliderProps.previewLabel}
-              onChange={(v) => updateParam(config.key, v)}
-            />
-          );
-        })}
-      </div>
+          <div className="mb-5">
+            <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
+              Syntax & Accent Colors
+            </h4>
+            {SLIDER_CONFIGS.accent.map((config) => {
+              const sliderProps = getSliderProps(config.key);
+              return (
+                <Slider
+                  key={config.key}
+                  label={config.label}
+                  value={params[config.key]}
+                  min={config.min}
+                  max={config.max}
+                  type={config.type}
+                  gradientColors={sliderProps.gradientColors}
+                  previewColor={sliderProps.previewColor}
+                  previewLabel={sliderProps.previewLabel}
+                  onChange={(v) => updateParam(config.key, v)}
+                />
+              );
+            })}
+          </div>
 
-      <div className="mb-5">
-        <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
-          Comments & Subtle Text
-        </h4>
-        {SLIDER_CONFIGS.comment.map((config) => {
-          const sliderProps = getSliderProps(config.key);
-          return (
-            <Slider
-              key={config.key}
-              label={config.label}
-              value={params[config.key]}
-              min={config.min}
-              max={config.max}
-              type={config.type}
-              gradientColors={sliderProps.gradientColors}
-              previewColor={sliderProps.previewColor}
-              previewLabel={sliderProps.previewLabel}
-              onChange={(v) => updateParam(config.key, v)}
-            />
-          );
-        })}
-      </div>
+          <div className="mb-5">
+            <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
+              Comments & Subtle Text
+            </h4>
+            {SLIDER_CONFIGS.comment.map((config) => {
+              const sliderProps = getSliderProps(config.key);
+              return (
+                <Slider
+                  key={config.key}
+                  label={config.label}
+                  value={params[config.key]}
+                  min={config.min}
+                  max={config.max}
+                  type={config.type}
+                  gradientColors={sliderProps.gradientColors}
+                  previewColor={sliderProps.previewColor}
+                  previewLabel={sliderProps.previewLabel}
+                  onChange={(v) => updateParam(config.key, v)}
+                />
+              );
+            })}
+          </div>
 
-      <div className="flex gap-2">
-        <Button
-          onClick={resetToFlavor}
-          variant="gradientWarm"
-          colors={pageColors}
-          className="text-xs font-bold flex-1"
-        >
-          🔄 Reset to {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
-        </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={resetToFlavor}
+              variant="gradientWarm"
+              colors={pageColors}
+              className="text-xs font-bold flex-1"
+            >
+              🔄 Reset to {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
+            </Button>
 
-        <Button
-          onClick={resetToTheme}
-          variant="gradientRed"
-          colors={pageColors}
-          className="text-xs font-bold flex-1"
-        >
-          🔄 Reset Theme
-        </Button>
-      </div>
+            <Button
+              onClick={resetToTheme}
+              variant="gradientRed"
+              colors={pageColors}
+              className="text-xs font-bold flex-1"
+            >
+              🔄 Reset Theme
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
@@ -279,7 +297,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ colors, activeTab, setActiv
             ))}
           </div>
           <div className="mt-5">
-            <h4 className="text-sm mb-3">Color Palette</h4>
+            <h4 className="text-base mb-3">Color Palette</h4>
             {Object.values(COLOR_GROUPS).map((group, i) => (
               <ColorPalette key={i} colors={colors} colorKeys={group.map(({ key }) => key)} />
             ))}
@@ -425,6 +443,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
 
 const App: React.FC = () => {
   const themeLogic = useThemeLogic();
+  const [isCustomizePanelExpanded, setIsCustomizePanelExpanded] = React.useState(true);
 
   return (
     <div
@@ -477,21 +496,30 @@ const App: React.FC = () => {
           everyday use • <strong>Bold:</strong> High contrast, maximum readability
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <CustomizePanel
-            params={themeLogic.params}
-            updateParam={themeLogic.updateParam}
-            resetToFlavor={themeLogic.resetToFlavor}
-            resetToTheme={themeLogic.resetToTheme}
-            flavor={themeLogic.flavor}
-            pageColors={themeLogic.pageColors}
-          />
+        <div className="flex flex-col lg:flex-row gap-8 mb-8">
+          <div
+            className={`${isCustomizePanelExpanded ? 'lg:w-1/2' : 'lg:w-3/4 lg:max-w-4xl lg:mx-auto'} transition-all duration-300`}
+          >
+            <PreviewPanel
+              colors={themeLogic.colors}
+              activeTab={themeLogic.activeTab}
+              setActiveTab={themeLogic.setActiveTab}
+            />
+          </div>
 
-          <PreviewPanel
-            colors={themeLogic.colors}
-            activeTab={themeLogic.activeTab}
-            setActiveTab={themeLogic.setActiveTab}
-          />
+          <div
+            className={`${isCustomizePanelExpanded ? 'lg:w-1/2' : 'lg:w-1/4'} transition-all duration-300`}
+          >
+            <CustomizePanel
+              params={themeLogic.params}
+              updateParam={themeLogic.updateParam}
+              resetToFlavor={themeLogic.resetToFlavor}
+              resetToTheme={themeLogic.resetToTheme}
+              flavor={themeLogic.flavor}
+              pageColors={themeLogic.pageColors}
+              onExpandChange={setIsCustomizePanelExpanded}
+            />
+          </div>
         </div>
 
         <ExportPanel

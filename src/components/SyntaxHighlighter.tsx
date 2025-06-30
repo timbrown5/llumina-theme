@@ -113,8 +113,8 @@ const SyntaxPreview: React.FC<SyntaxPreviewProps> = ({ colors, language }) => {
       style={theme}
       customStyle={{
         margin: 0,
-        fontSize: '0.875rem',
-        lineHeight: '1.5',
+        fontSize: '1rem',
+        lineHeight: '1.6',
       }}
     >
       {code}

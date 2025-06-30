@@ -8,7 +8,7 @@ interface ColorListProps {
 
 export const ColorList: React.FC<ColorListProps> = ({ title, colors, colorData }) => (
   <div>
-    <h5 style={{ color: colors.base04 }} className="text-xs text-center mb-2">
+    <h5 style={{ color: colors.base04 }} className="text-sm text-center mb-2">
       {title}
     </h5>
     {colorData.map(({ key, name }) => (
@@ -17,7 +17,7 @@ export const ColorList: React.FC<ColorListProps> = ({ title, colors, colorData }
           style={{ backgroundColor: colors[key as keyof Base24Colors] }}
           className="w-4 h-4 rounded border border-white border-opacity-20"
         />
-        <span className="text-xs">{name}</span>
+        <span className="text-sm">{name}</span>
       </div>
     ))}
   </div>
@@ -37,7 +37,7 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({ colors, colorKeys })
           backgroundColor: colors[colorKey as keyof Base24Colors],
           textShadow: '0 0 2px rgba(0,0,0,0.8)',
         }}
-        className="w-10 h-10 rounded border border-white border-opacity-20 cursor-pointer flex items-center justify-center text-xs font-bold text-white"
+        className="w-10 h-10 rounded border border-white border-opacity-20 cursor-pointer flex items-center justify-center text-sm font-bold text-white"
       >
         {colorKey.slice(-2)}
       </div>
