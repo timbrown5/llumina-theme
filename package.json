@@ -1,13 +1,12 @@
 {
   "dependencies": {
-    "chroma-js": "^2.4.2",
+    "@texel/color": "^1.1.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-syntax-highlighter": "^15.5.0"
   },
   "description": "Create beautiful Base24 themes for Neovim and terminals",
   "devDependencies": {
-    "@types/chroma-js": "^2.4.4",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/react-syntax-highlighter": "^15.5.0",
