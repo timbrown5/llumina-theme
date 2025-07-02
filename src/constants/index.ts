@@ -201,24 +201,30 @@ export const SLIDER_GENERATORS: Record<keyof ThemeParams, SliderGenerator> = {
   bgHue: {
     gradient: () => generateHueGradient(),
     preview: (value) => ({
-      color: okhslToRgb(value, 0.8, 0.6),
+      color: okhslToRgb(value, 80, 60),
       label: `${value}°`,
     }),
   },
   accentHue: {
-    gradient: () => generateAccentHueGradient(0, -180, 180),
-    preview: (value) => ({
-      color: okhslToRgb((0 + value + 360) % 360, 0.8, 0.6),
-      label: `Red + ${value > 0 ? '+' : ''}${value}° = ${(0 + value + 360) % 360}°`,
-    }),
+    gradient: () =>
+      generateAccentHueGradient(0, SLIDER_RANGES.ACCENT_HUE_MIN, SLIDER_RANGES.ACCENT_HUE_MAX),
+    preview: (value) => {
+      // Red is at 29° in OKHSL, show what the adjusted red looks like
+      const adjustedHue = (BASE_HUES.red + value + 360) % 360;
+      return {
+        color: okhslToRgb(adjustedHue, 80, 60),
+        label: `Red + ${value > 0 ? '+' : ''}${value}° = ${Math.round(adjustedHue)}°`,
+      };
+    },
   },
   bgSat: {
     gradient: (params) => generateSaturationGradient(params.bgHue),
   },
   accentSat: {
     gradient: (params) => {
-      const accentHue = (0 + params.accentHue + 360) % 360;
-      return generateSaturationGradient(accentHue);
+      // Use red as the base for accent saturation gradient
+      const adjustedRedHue = (BASE_HUES.red + params.accentHue + 360) % 360;
+      return generateSaturationGradient(adjustedRedHue);
     },
   },
   bgLight: {
@@ -226,13 +232,14 @@ export const SLIDER_GENERATORS: Record<keyof ThemeParams, SliderGenerator> = {
   },
   accentLight: {
     gradient: (params) => {
-      const accentHue = (0 + params.accentHue + 360) % 360;
-      return generateLightnessGradient(accentHue, params.accentSat);
+      // Use red as the base for accent lightness gradient
+      const adjustedRedHue = (BASE_HUES.red + params.accentHue + 360) % 360;
+      return generateLightnessGradient(adjustedRedHue, params.accentSat);
     },
   },
   commentLight: {
     gradient: (params) => {
-      const isLight = params.bgLight > 50;
+      const isLight = params.bgLight > LIGHT_THEME_THRESHOLD;
       const commentHue = (params.bgHue + (isLight ? 180 : 0) + 360) % 360;
       return generateLightnessGradient(commentHue, 15);
     },
@@ -281,18 +288,88 @@ export const TABS: Tab[] = [
   { id: 'terminal', label: 'Terminal' },
 ];
 
+// OKHSL base hue values for standard colors
+// When accentHue = 0, these should produce the expected color names
+export const BASE_HUES = {
+  red: 29, // OKHSL red
+  orange: 50, // Orange in OKHSL
+  yellow: 110, // Brighter yellow (moved from 90°)
+  green: 140, // OKHSL green
+  cyan: 180, // Cyan in OKHSL
+  blue: 220, // OKHSL blue
+  purple: 280, // Purple in OKHSL
+  pink: 320, // Pink/Magenta in OKHSL
+} as const;
+
+// Theme classification threshold
+export const LIGHT_THEME_THRESHOLD = 50;
+
+// Slider configuration ranges (shared between sliders and validation)
+export const SLIDER_RANGES = {
+  HUE_MIN: 0,
+  HUE_MAX: 360,
+  ACCENT_HUE_MIN: -180,
+  ACCENT_HUE_MAX: 180,
+  SATURATION_MIN: 0,
+  SATURATION_MAX: 100,
+  LIGHTNESS_MIN: 0,
+  LIGHTNESS_MAX: 100,
+} as const;
+
 export const SLIDER_CONFIGS: Record<string, SliderConfig[]> = {
   main: [
-    { label: 'Background Hue', key: 'bgHue', min: 0, max: 360, type: 'hue' },
-    { label: 'Background Saturation', key: 'bgSat', min: 0, max: 100, type: 'saturation' },
-    { label: 'Background Lightness', key: 'bgLight', min: 0, max: 100, type: 'lightness' },
+    {
+      label: 'Background Hue',
+      key: 'bgHue',
+      min: SLIDER_RANGES.HUE_MIN,
+      max: SLIDER_RANGES.HUE_MAX,
+      type: 'hue',
+    },
+    {
+      label: 'Background Saturation',
+      key: 'bgSat',
+      min: SLIDER_RANGES.SATURATION_MIN,
+      max: SLIDER_RANGES.SATURATION_MAX,
+      type: 'saturation',
+    },
+    {
+      label: 'Background Lightness',
+      key: 'bgLight',
+      min: SLIDER_RANGES.LIGHTNESS_MIN,
+      max: SLIDER_RANGES.LIGHTNESS_MAX,
+      type: 'lightness',
+    },
   ],
   accent: [
-    { label: 'Accent Hue Adjustment', key: 'accentHue', min: -180, max: 180, type: 'hue' },
-    { label: 'Accent Saturation', key: 'accentSat', min: 0, max: 100, type: 'saturation' },
-    { label: 'Accent Lightness', key: 'accentLight', min: 0, max: 100, type: 'lightness' },
+    {
+      label: 'Accent Hue Adjustment',
+      key: 'accentHue',
+      min: SLIDER_RANGES.ACCENT_HUE_MIN,
+      max: SLIDER_RANGES.ACCENT_HUE_MAX,
+      type: 'hue',
+    },
+    {
+      label: 'Accent Saturation',
+      key: 'accentSat',
+      min: SLIDER_RANGES.SATURATION_MIN,
+      max: SLIDER_RANGES.SATURATION_MAX,
+      type: 'saturation',
+    },
+    {
+      label: 'Accent Lightness',
+      key: 'accentLight',
+      min: SLIDER_RANGES.LIGHTNESS_MIN,
+      max: SLIDER_RANGES.LIGHTNESS_MAX,
+      type: 'lightness',
+    },
   ],
   comment: [
-    { label: 'Comment Lightness', key: 'commentLight', min: 0, max: 100, type: 'lightness' },
+    {
+      label: 'Comment Lightness',
+      key: 'commentLight',
+      min: SLIDER_RANGES.LIGHTNESS_MIN,
+      max: SLIDER_RANGES.LIGHTNESS_MAX,
+      type: 'lightness',
+    },
   ],
 };

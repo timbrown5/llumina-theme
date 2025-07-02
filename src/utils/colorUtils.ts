@@ -1,10 +1,27 @@
 import { convert, OKHSL, sRGB } from '@texel/color';
 import type { ThemeParams, Base24Colors } from '../types/index.ts';
+import { BASE_HUES, LIGHT_THEME_THRESHOLD } from '../constants/index.ts';
 
 export const okhslToRgb = (h: number, s: number, l: number): string => {
-  const [r, g, b] = convert([h, s / 100, l / 100], OKHSL, sRGB);
+  // Clamp values to prevent gamut overflow
+  const clampedS = Math.max(0, Math.min(100, s));
+  const clampedL = Math.max(0, Math.min(100, l));
+
+  // Very light touch for yellow/green gamut issues - only at extreme values
+  let adjustedS = clampedS;
+
+  const normalizedHue = ((h % 360) + 360) % 360;
+  const isYellowish = normalizedHue >= 85 && normalizedHue <= 115;
+  const isGreenish = normalizedHue >= 130 && normalizedHue <= 160;
+
+  // Only adjust at very high lightness to prevent complete gamut overflow
+  if ((isYellowish || isGreenish) && clampedL > 90 && clampedS > 80) {
+    adjustedS = clampedS * 0.9; // Very gentle reduction
+  }
+
+  const [r, g, b] = convert([normalizedHue, adjustedS / 100, clampedL / 100], OKHSL, sRGB);
   const toHex = (n: number) =>
-    Math.round(n * 255)
+    Math.round(Math.max(0, Math.min(255, n * 255)))
       .toString(16)
       .padStart(2, '0');
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
@@ -28,7 +45,9 @@ export const generateAccentHueGradient = (
 ): string[] => {
   return Array.from({ length: steps }, (_, i) => {
     const adjustment = minAdjustment + ((maxAdjustment - minAdjustment) * i) / (steps - 1);
-    const finalHue = (baseHue + adjustment + 360) % 360;
+    // Show the red color (base color for accents) with the adjustment
+    const redHue = 29; // Red in OKHSL space
+    const finalHue = (redHue + adjustment + 360) % 360;
     return okhslToRgb(finalHue, 80, 60);
   });
 };
@@ -45,49 +64,49 @@ export const generateLightnessGradient = (hue: number, saturation: number): stri
 ];
 
 export const generateColors = (params: ThemeParams): Base24Colors => {
-  const isLight = params.bgLight > 50;
+  const isLight = params.bgLight > LIGHT_THEME_THRESHOLD;
 
-  // Background colors
+  // Background colors - simple and clean
   const base00 = okhslToRgb(params.bgHue, params.bgSat, params.bgLight);
-  const base01 = okhslToRgb(
-    params.bgHue,
-    Math.min(100, params.bgSat * 1.2),
-    Math.max(0, Math.min(100, params.bgLight + (isLight ? -4 : 4)))
-  );
-  const base02 = okhslToRgb(
-    params.bgHue,
-    Math.min(100, params.bgSat * 1.5),
-    Math.max(0, Math.min(100, params.bgLight + (isLight ? -8 : 8)))
-  );
+  const base01 = okhslToRgb(params.bgHue, params.bgSat, params.bgLight + (isLight ? -3 : 3));
+  const base02 = okhslToRgb(params.bgHue, params.bgSat + 10, params.bgLight + (isLight ? -6 : 6));
 
-  // Comments
-  const commentHue = (params.bgHue + (isLight ? 180 : 0)) % 360;
-  const base03 = okhslToRgb(commentHue, 15, params.commentLight);
+  // Comments - opposite hue, desaturated
+  const commentHue = (params.bgHue + 180) % 360;
+  const base03 = okhslToRgb(commentHue, 20, params.commentLight);
 
-  // Foreground colors
-  const fgLight = isLight ? 15 : 85;
-  const base04 = okhslToRgb(params.bgHue, 20, Math.max(0, Math.min(100, fgLight + 15)));
-  const base05 = okhslToRgb(params.bgHue, 15, fgLight);
-  const base06 = okhslToRgb(params.bgHue, 12, Math.max(0, Math.min(100, fgLight - 5)));
-  const base07 = okhslToRgb(params.bgHue, 10, Math.max(0, Math.min(100, fgLight - 10)));
+  // Foreground colors - simple progression
+  const fgLight = isLight ? 20 : 80;
+  const base04 = okhslToRgb(params.bgHue, 15, fgLight - 10);
+  const base05 = okhslToRgb(params.bgHue, 10, fgLight); // Main foreground
+  const base06 = okhslToRgb(params.bgHue, 5, fgLight + 10);
+  const base07 = okhslToRgb(params.bgHue, 0, fgLight + 20);
 
-  // Accent colors - evenly distributed
-  const accentHues = [0, 30, 60, 120, 165, 210, 270, 330].map((offset) => {
-    let hue = params.accentHue + offset;
-    while (hue < 0) hue += 360;
-    while (hue >= 360) hue -= 360;
-    return hue;
-  });
+  // Accent colors - when accentHue = 0, use the base hues directly
+  const accentHues = [
+    (BASE_HUES.red + params.accentHue + 360) % 360,
+    (BASE_HUES.orange + params.accentHue + 360) % 360,
+    (BASE_HUES.yellow + params.accentHue + 360) % 360,
+    (BASE_HUES.green + params.accentHue + 360) % 360,
+    (BASE_HUES.cyan + params.accentHue + 360) % 360,
+    (BASE_HUES.blue + params.accentHue + 360) % 360,
+    (BASE_HUES.purple + params.accentHue + 360) % 360,
+    (BASE_HUES.pink + params.accentHue + 360) % 360,
+  ];
 
-  const accents = accentHues.map((hue) => {
-    return okhslToRgb(hue, params.accentSat, params.accentLight);
-  });
+  // Generate accent colors using user parameters directly
+  const accents = accentHues.map((hue) => okhslToRgb(hue, params.accentSat, params.accentLight));
 
-  // Muted colors
-  const mutedSat = Math.max(10, params.accentSat * 0.6);
-  const mutedLight = Math.min(90, params.accentLight + 10);
-
+  // Muted colors - same hues, reduced saturation, gentle overflow protection
   const muted = accentHues.map((hue) => {
+    const mutedSat = params.accentSat * 0.6;
+    let mutedLight = params.accentLight + 10;
+
+    // Only prevent extreme overflow - keep colors bright
+    if (mutedLight > 95) {
+      mutedLight = 95; // Very gentle cap
+    }
+
     return okhslToRgb(hue, mutedSat, mutedLight);
   });
 
@@ -100,21 +119,21 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
     base05,
     base06,
     base07,
-    base08: accents[0],
-    base09: accents[1],
-    base0A: accents[2],
-    base0B: accents[3],
-    base0C: accents[4],
-    base0D: accents[5],
-    base0E: accents[6],
-    base0F: accents[7],
-    base10: muted[0],
-    base11: muted[1],
-    base12: muted[2],
-    base13: muted[3],
-    base14: muted[4],
-    base15: muted[5],
-    base16: muted[6],
-    base17: muted[7],
+    base08: accents[0], // Red
+    base09: accents[1], // Orange
+    base0A: accents[2], // Yellow
+    base0B: accents[3], // Green
+    base0C: accents[4], // Cyan
+    base0D: accents[5], // Blue
+    base0E: accents[6], // Purple
+    base0F: accents[7], // Pink
+    base10: muted[0], // Muted Red
+    base11: muted[1], // Muted Orange
+    base12: muted[2], // Muted Yellow
+    base13: muted[3], // Muted Green
+    base14: muted[4], // Muted Cyan
+    base15: muted[5], // Muted Blue
+    base16: muted[6], // Muted Purple
+    base17: muted[7], // Muted Pink
   };
 };
