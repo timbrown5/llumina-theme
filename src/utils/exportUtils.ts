@@ -94,6 +94,11 @@ return colors`,
 
   stylix: {
     generate: (colors, themeName, flavor) => {
+      // In exportUtils.ts, add this to the createStylixTheme function:
+      console.log('Stylix export green (base0B):', colors.base0B);
+
+      // And in your preview component, log what's being displayed:
+      console.log('Preview green (base0B):', colors.base0B);
       const nixThemeName = themeName.toLowerCase().replace(/[^a-z0-9]/g, '-');
       const isLight = colors.base00 > colors.base05;
 
@@ -139,12 +144,14 @@ ${Object.entries(colors)
       const currentTheme = themeData[activeTheme!];
 
       if (currentTheme && allParams) {
+        // Update base theme properties from current params
         if (params) {
           currentTheme.bgHue = params.bgHue;
           currentTheme.bgSat = params.bgSat;
           currentTheme.bgLight = params.bgLight;
         }
 
+        // Update all flavors with their respective parameters
         Object.entries(allParams).forEach(([flavorKey, flavorParams]) => {
           if (currentTheme.flavors && currentTheme.flavors[flavorKey as FlavorKey]) {
             currentTheme.flavors[flavorKey as FlavorKey] = {
@@ -157,7 +164,15 @@ ${Object.entries(colors)
         });
       }
 
-      return `export const RAW_THEME_DATA = ${JSON.stringify(themeData, null, 2)} as const;`;
+      return `// Theme configuration - paste this into your theme constants
+// Updated theme: ${activeTheme} (all flavors included)
+// Current view: ${flavor} flavor
+
+export const RAW_THEME_DATA = ${JSON.stringify(themeData, null, 2)} as const;
+
+// To use these settings:
+// 1. Replace the RAW_THEME_DATA in src/constants/index.ts with the above
+// 2. All your customizations for ${activeTheme} theme will be preserved across all flavors`;
     },
   },
 };
