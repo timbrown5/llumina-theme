@@ -1,11 +1,13 @@
 {
   "dependencies": {
+    "culori": "^4.0.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-syntax-highlighter": "^15.5.0"
   },
   "description": "Create beautiful Base24 themes for Neovim and terminals",
   "devDependencies": {
+    "@types/culori": "^4.0.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/react-syntax-highlighter": "^15.5.0",

@@ -1,5 +1,7 @@
 import type { ThemeParams, Base24Colors } from '../types/index.ts';
+import { lab, formatHex } from 'culori';
 
+// Convert HSL values to hex color string
 export const hslToRgb = (h: number, s: number, l: number): string => {
   const hNorm = h / 360;
   const sNorm = s / 100;
@@ -47,123 +49,72 @@ export const hslToRgb = (h: number, s: number, l: number): string => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
-// Perceptual lightness correction based on human vision sensitivity
-const getPerceptualLightnessCorrection = (hue: number, saturation: number): number => {
-  // Convert hue to radians for trig functions
-  const radians = (hue * Math.PI) / 180;
+// Scientific perceptual adjustment using CIE LAB color space
+const adjustColorPerceptually = (h: number, s: number, l: number): string => {
+  const basicColor = hslToRgb(h, s, l);
 
-  // Approximate how bright different hues appear to human eye
-  // Based on CIE luminance weights but simplified for HSL
-  const perceptualBrightness =
-    0.3 * Math.max(0, Math.cos(radians)) + // Red component peak at 0°
-    0.59 * Math.max(0, Math.cos(radians - (Math.PI * 2) / 3)) + // Green component peak at 120°
-    0.11 * Math.max(0, Math.cos(radians - (Math.PI * 4) / 3)); // Blue component peak at 240°
+  try {
+    // Convert basic color to LAB using hex string
+    const labColor = lab(basicColor);
+    if (!labColor || typeof labColor.l !== 'number') {
+      return basicColor;
+    }
 
-  // Higher saturation means more correction needed
-  const saturationFactor = Math.pow(saturation / 100, 0.8); // Slightly non-linear
+    const chroma = Math.sqrt((labColor.a || 0) ** 2 + (labColor.b || 0) ** 2);
+    const hueAngle = (Math.atan2(labColor.b || 0, labColor.a || 0) * 180) / Math.PI;
+    const normalizedHue = (hueAngle + 360) % 360;
 
-  // Calculate correction: positive = needs darkening, negative = needs brightening
-  // Scale by saturation - highly saturated colors need more correction
-  const correction = (perceptualBrightness - 0.33) * 12 * saturationFactor;
+    let targetLightness = labColor.l;
 
-  return correction;
+    // Only apply adjustments if chroma is significantly high
+    if (chroma > 35) {
+      if (normalizedHue >= 70 && normalizedHue <= 130) {
+        // Yellow-green: gentle reduction
+        if (targetLightness > 65) {
+          targetLightness = targetLightness * 0.96;
+        }
+      } else if (normalizedHue >= 130 && normalizedHue <= 180) {
+        // Pure green: minimal adjustment
+        if (targetLightness > 70) {
+          targetLightness = targetLightness * 0.98;
+        }
+      } else if (normalizedHue >= 180 && normalizedHue <= 220) {
+        // Cyan: slight adjustment
+        if (targetLightness > 75) {
+          targetLightness = targetLightness * 0.97;
+        }
+      }
+    }
+
+    // Apply lightness adjustment if needed
+    if (Math.abs(targetLightness - labColor.l) > 0.1) {
+      const adjustedLabColor = { ...labColor, l: targetLightness };
+      const result = formatHex(adjustedLabColor);
+      if (result && result !== '#000000' && result !== '#ffffff') {
+        return result;
+      }
+    }
+
+    return basicColor;
+  } catch (error) {
+    console.warn('Color adjustment failed, using basic color:', error);
+    return basicColor;
+  }
 };
 
-// Calculate muted lightness from accent lightness using a perceptual curve
-const getMutedLightness = (accentLightness: number): number => {
-  const minDifference = 5; // Difference for bright themes (90%+ lightness)
-  const maxDifference = 15; // Difference for dark themes (0-10% lightness)
-  const maxMutedLightness = 90; // Cap to prevent muted colors becoming white
-
-  // Simple quadratic curve: more aggressive reduction at higher lightness
-  const t = accentLightness / 100; // Normalize to 0-1
-  const difference = maxDifference - (maxDifference - minDifference) * t * t;
-
-  return Math.min(maxMutedLightness, accentLightness + difference);
-};
-
-// Apply perceptual adjustments for specific hues
-const getAdjustedSaturation = (
-  hue: number,
-  baseSaturation: number,
-  baseLightness: number
-): number => {
-  // Normalize hue to 0-360
-  const normalizedHue = ((hue % 360) + 360) % 360;
-
-  // Yellow (50-70°) - reduce saturation as it looks too bright
-  if (normalizedHue >= 50 && normalizedHue <= 70) {
-    return Math.max(10, baseSaturation * 0.75);
-  }
-
-  // Cyan (170-190°) - reduce saturation as it's too electric
-  if (normalizedHue >= 170 && normalizedHue <= 190) {
-    return Math.max(15, baseSaturation * 0.8);
-  }
-
-  // Green (100-140°) - reduce saturation as it can look too electric in HSL
-  if (normalizedHue >= 100 && normalizedHue <= 140) {
-    return Math.max(15, baseSaturation * 0.85);
-  }
-
-  // Orange (20-40°) - slight reduction to balance with red
-  if (normalizedHue >= 20 && normalizedHue <= 40) {
-    return Math.max(10, baseSaturation * 0.9);
-  }
-
-  return baseSaturation;
-};
-
-const getAdjustedLightness = (hue: number, baseLightness: number, saturation: number): number => {
-  const normalizedHue = ((hue % 360) + 360) % 360;
-
-  // Start with perceptual correction
-  let adjustment = getPerceptualLightnessCorrection(hue, saturation);
-
-  // Add manual corrections for specific problem hues
-  // Yellow (50-70°) - additional darkening beyond perceptual correction
-  if (normalizedHue >= 50 && normalizedHue <= 70) {
-    // Smoothly scale additional reduction from 1 point at 40% to 4 points at 80%
-    const minReduction = 1;
-    const maxReduction = 4;
-    const minLightness = 40;
-    const maxLightness = 80;
-
-    const factor = Math.max(
-      0,
-      Math.min(1, (baseLightness - minLightness) / (maxLightness - minLightness))
-    );
-    const additionalReduction = minReduction + (maxReduction - minReduction) * factor;
-    adjustment -= additionalReduction;
-  }
-
-  // Purple/Violet (260-290°) - make slightly lighter for readability
-  if (normalizedHue >= 260 && normalizedHue <= 290) {
-    adjustment += 3;
-  }
-
-  // Blue (200-250°) - slight lightness boost for better contrast
-  if (normalizedHue >= 200 && normalizedHue <= 250) {
-    adjustment += 2;
-  }
-
-  return Math.max(5, Math.min(95, baseLightness + adjustment));
-};
-
-// Enhanced HSL conversion with perceptual adjustments
+// Enhanced HSL conversion with CIE LAB adjustments
 export const adjustedHslToRgb = (h: number, s: number, l: number): string => {
-  const adjustedS = getAdjustedSaturation(h, s, l);
-  const adjustedL = getAdjustedLightness(h, l, adjustedS);
-  return hslToRgb(h, adjustedS, adjustedL);
+  return adjustColorPerceptually(h, s, l);
 };
 
+// Utility functions for UI sliders and gradients
 export const createGradientBg = (colors: string[]): string =>
   `linear-gradient(90deg, ${colors.join(', ')})`;
 
 export const generateHueGradient = (steps: number = 25): string[] => {
   return Array.from({ length: steps }, (_, i) => {
     const hue = (360 * i) / (steps - 1);
-    return hslToRgb(hue, 80, 60); // Use basic HSL for gradients
+    return hslToRgb(hue, 80, 60);
   });
 };
 
@@ -176,7 +127,7 @@ export const generateAccentHueGradient = (
   return Array.from({ length: steps }, (_, i) => {
     const adjustment = minAdjustment + ((maxAdjustment - minAdjustment) * i) / (steps - 1);
     const finalHue = (baseHue + adjustment + 360) % 360;
-    return hslToRgb(finalHue, 80, 60); // Use basic HSL for gradients
+    return hslToRgb(finalHue, 80, 60);
   });
 };
 
@@ -191,10 +142,23 @@ export const generateLightnessGradient = (hue: number, saturation: number): stri
   hslToRgb(hue, saturation, 100),
 ];
 
+// Calculate muted color lightness
+const getMutedLightness = (accentLightness: number): number => {
+  const minDifference = 8;
+  const maxDifference = 18;
+  const maxMutedLightness = 85;
+
+  const t = accentLightness / 100;
+  const difference = maxDifference - (maxDifference - minDifference) * t * t;
+
+  return Math.min(maxMutedLightness, accentLightness + difference);
+};
+
+// Generate complete Base24 color palette
 export const generateColors = (params: ThemeParams): Base24Colors => {
   const isLight = params.bgLight > 50;
 
-  // Background colors (use basic HSL)
+  // Background colors
   const base00 = hslToRgb(params.bgHue, params.bgSat, params.bgLight);
   const base01 = hslToRgb(
     params.bgHue,
@@ -218,9 +182,8 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
   const base06 = hslToRgb(params.bgHue, 12, Math.max(0, Math.min(100, fgLight - 5)));
   const base07 = hslToRgb(params.bgHue, 10, Math.max(0, Math.min(100, fgLight - 10)));
 
-  // Standard HSL hue positions
+  // Accent color hue positions
   const accentHueOffsets = [0, 30, 60, 120, 180, 210, 270, 330];
-
   const accentHues = accentHueOffsets.map((offset) => {
     let hue = params.accentHue + offset;
     while (hue < 0) hue += 360;
@@ -228,15 +191,14 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
     return hue;
   });
 
-  // Generate accent colors with perceptual adjustments
+  // Generate accent colors with CIE LAB-based perceptual adjustments
   const accents = accentHues.map((hue) => {
     return adjustedHslToRgb(hue, params.accentSat, params.accentLight);
   });
 
-  // Muted colors with perceptually consistent contrast from accents
-  const mutedSat = Math.max(20, params.accentSat * 0.75);
+  // Generate muted colors
+  const mutedSat = Math.max(25, params.accentSat * 0.7);
   const mutedLight = getMutedLightness(params.accentLight);
-
   const muted = accentHues.map((hue) => {
     return adjustedHslToRgb(hue, mutedSat, mutedLight);
   });
@@ -250,21 +212,21 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
     base05,
     base06,
     base07,
-    base08: accents[0], // Red (0°)
-    base09: accents[1], // Orange (30°) - reduced saturation
-    base0A: accents[2], // Yellow (60°) - reduced saturation & lightness
-    base0B: accents[3], // Green (120°) - slight saturation boost
-    base0C: accents[4], // Cyan (180°) - reduced saturation
-    base0D: accents[5], // Blue (210°) - slight lightness boost
-    base0E: accents[6], // Purple (270°) - slight lightness boost
-    base0F: accents[7], // Pink (330°)
-    base10: muted[0], // Muted Red
-    base11: muted[1], // Muted Orange
-    base12: muted[2], // Muted Yellow
-    base13: muted[3], // Muted Green
-    base14: muted[4], // Muted Cyan
-    base15: muted[5], // Muted Blue
-    base16: muted[6], // Muted Purple
-    base17: muted[7], // Muted Pink
+    base08: accents[0], // Red
+    base09: accents[1], // Orange
+    base0A: accents[2], // Yellow (CIE LAB adjusted)
+    base0B: accents[3], // Green (CIE LAB adjusted)
+    base0C: accents[4], // Cyan (CIE LAB adjusted)
+    base0D: accents[5], // Blue
+    base0E: accents[6], // Purple
+    base0F: accents[7], // Pink
+    base10: muted[0],
+    base11: muted[1],
+    base12: muted[2],
+    base13: muted[3],
+    base14: muted[4],
+    base15: muted[5],
+    base16: muted[6],
+    base17: muted[7],
   };
 };

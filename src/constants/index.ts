@@ -53,20 +53,20 @@ export const RAW_THEME_DATA = {
     flavors: {
       muted: {
         accentHue: 0,
-        accentSat: 90,
-        accentLight: 70,
+        accentSat: 85,
+        accentLight: 75,
         commentLight: 55,
       },
       balanced: {
         accentHue: 0,
         accentSat: 90,
-        accentLight: 60,
+        accentLight: 65,
         commentLight: 55,
       },
       bold: {
         accentHue: 0,
         accentSat: 95,
-        accentLight: 50,
+        accentLight: 55,
         commentLight: 60,
       },
     },

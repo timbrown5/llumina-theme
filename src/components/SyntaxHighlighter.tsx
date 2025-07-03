@@ -36,14 +36,25 @@ import { useState, useEffect } from 'react'
 
 const useCounter = (initialValue = 0) => {
   const [count, setCount] = useState(initialValue)
+  const [error, setError] = useState(null)
 
-  const increment = () => setCount(prev => prev + 1)
+  const increment = () => {
+    try {
+      setCount(prev => prev + 1)
+      setError(null) // Clear any previous errors
+    } catch (err) {
+      setError('Failed to increment')
+    }
+  }
 
   useEffect(() => {
     console.log(\`Count: \${count}\`)
+    if (count > 100) {
+      console.warn('Count is getting high!')
+    }
   }, [count])
 
-  return { count, increment }
+  return { count, increment, error }
 }`,
 
   python: `# Data Processing Pipeline
@@ -53,24 +64,42 @@ from typing import List, Optional
 class DataProcessor:
     def __init__(self, threshold: float = 0.5):
         self.threshold = threshold
+        self.errors = []
 
     def process(self, data: List[dict]) -> pd.DataFrame:
         """Filter and process data."""
-        df = pd.DataFrame(data)
-        return df[df['score'] > self.threshold]`,
+        try:
+            df = pd.DataFrame(data)
+            # Filter by threshold
+            filtered = df[df['score'] > self.threshold]
+            print(f"Processed {len(filtered)} records")
+            return filtered
+        except ValueError as e:
+            self.errors.append(str(e))
+            raise Exception("Processing failed")`,
 
   cpp: `// Modern C++ with Smart Pointers
 #include <memory>
 #include <vector>
+#include <iostream>
 
 template<typename T>
 class Container {
 private:
     std::vector<std::unique_ptr<T>> data_;
+    bool debug_mode = false;
 
 public:
     void add(T&& item) {
         data_.push_back(std::make_unique<T>(std::move(item)));
+        if (debug_mode) {
+            std::cout << "Added item, size: " << size() << std::endl;
+        }
+    }
+
+    void clear() {
+        data_.clear();
+        std::cerr << "Container cleared!" << std::endl;
     }
 
     size_t size() const { return data_.size(); }
@@ -80,14 +109,22 @@ public:
 On branch main
 Changes not staged for commit:
   modified: src/components/ThemeGenerator.tsx
-  modified: src/utils/colorUtils.ts
+  deleted:  old_config.json
+
+Untracked files:
+  new_feature.rs
 
 ❯ npm run build
-✓ Build successful
+✓ Build successful in 2.3s
+⚠ 2 warnings found
 
-❯ git add . && git commit -m "Optimize codebase"
-[main abc123] Optimize codebase
- 2 files changed, 50 insertions(+), 150 deletions(-)`,
+❯ git add . && git commit -m "Add new theme system"
+[main abc123] Add new theme system
+ 3 files changed, 150 insertions(+), 50 deletions(-)
+
+❯ cargo test
+error: compilation failed
+thread 'main' panicked at src/lib.rs:42`,
 };
 
 interface SyntaxPreviewProps {
