@@ -1,0 +1,38 @@
+{
+  "name": "Lumina Dawn",
+  "tagline": "The warm pink and gold of sunrise",
+  "inspirations": "Sunrise, new beginnings, opportunity, hope, fresh starts, awakening",
+  "bgHue": 345,
+  "bgSat": 45,
+  "bgLight": 15,
+  "accentOffsets": {
+    "red": { "hue": 0 },
+    "orange": { "hue": 30 },
+    "yellow": { "hue": 60 },
+    "green": { "hue": 120 },
+    "cyan": { "hue": 150 },
+    "blue": { "hue": 180 },
+    "purple": { "hue": 240 },
+    "pink": { "hue": 315 }
+  },
+  "flavors": {
+    "muted": {
+      "accentHue": 15,
+      "accentSat": 85,
+      "accentLight": 75,
+      "commentLight": 55
+    },
+    "balanced": {
+      "accentHue": 15,
+      "accentSat": 95,
+      "accentLight": 60,
+      "commentLight": 55
+    },
+    "bold": {
+      "accentHue": 15,
+      "accentSat": 100,
+      "accentLight": 50,
+      "commentLight": 60
+    }
+  }
+}

@@ -1,101 +1,232 @@
 import React from 'react';
-import {
-  getBaseTheme,
-  getAllThemeKeys,
-  getAllFlavorKeys,
-  COLOR_GROUPS,
-  TABS,
-  SLIDER_CONFIGS,
-  SLIDER_GENERATORS,
-} from './constants/index.ts';
+import { themeLoader } from './utils/themeLoader.ts';
 import { useThemeLogic } from './hooks/useThemeLogic.ts';
 import Button from './components/Button.tsx';
 import Slider from './components/Slider.tsx';
-import { ColorList, ColorPalette } from './components/ColorComponents.tsx';
+import ColorPaletteEditor from './components/ColorPaletteEditor.tsx';
 import SyntaxPreview from './components/SyntaxHighlighter.tsx';
 import UIPreview from './components/UIPreview.tsx';
 import type { ThemeKey, FlavorKey, TabKey, Base24Colors, ThemeParams } from './types/index.ts';
 
-interface SelectorProps<T> {
-  title: string;
-  items: T[];
-  activeItem: T;
-  onSelect: (item: T) => void;
-  pageColors: Base24Colors;
-  renderItem: (item: T) => { label: string; description?: string; inspiration?: string };
-  variant?: 'theme' | 'flavor';
-  className?: string;
+const TABS = [
+  { id: 'ui-preview', label: 'UI Preview' },
+  { id: 'javascript', label: 'JavaScript' },
+  { id: 'python', label: 'Python' },
+  { id: 'cpp', label: 'C++' },
+  { id: 'terminal', label: 'Terminal' },
+] as const;
+
+const generateHueGradient = () => {
+  const colors = [];
+  for (let i = 0; i <= 12; i++) {
+    const hue = (360 * i) / 12;
+    colors.push(`hsl(${hue}, 70%, 50%)`);
+  }
+  return colors;
+};
+
+const generateSaturationGradient = (hue: number) => [
+  `hsl(${hue}, 0%, 50%)`,
+  `hsl(${hue}, 100%, 50%)`,
+];
+
+const generateLightnessGradient = (hue: number, sat: number) => [
+  `hsl(${hue}, ${sat}%, 0%)`,
+  `hsl(${hue}, ${sat}%, 50%)`,
+  `hsl(${hue}, ${sat}%, 100%)`,
+];
+
+type ValidSliderKey =
+  | 'bgHue'
+  | 'bgSat'
+  | 'bgLight'
+  | 'accentHue'
+  | 'accentSat'
+  | 'accentLight'
+  | 'commentLight';
+
+interface SliderConfig {
+  label: string;
+  key: ValidSliderKey;
+  min: number;
+  max: number;
+  type: 'hue' | 'saturation' | 'lightness';
 }
 
-function Selector<T>({
-  title,
-  items,
-  activeItem,
-  onSelect,
-  pageColors,
-  renderItem,
-  variant = 'theme',
-  className = '',
-}: SelectorProps<T>) {
+const SLIDER_CONFIGS: Record<string, SliderConfig[]> = {
+  main: [
+    { label: 'Background Hue', key: 'bgHue', min: 0, max: 360, type: 'hue' },
+    { label: 'Background Saturation', key: 'bgSat', min: 0, max: 100, type: 'saturation' },
+    { label: 'Background Lightness', key: 'bgLight', min: 0, max: 100, type: 'lightness' },
+  ],
+  accent: [
+    { label: 'Accent Hue', key: 'accentHue', min: 0, max: 360, type: 'hue' },
+    { label: 'Accent Saturation', key: 'accentSat', min: 0, max: 100, type: 'saturation' },
+    { label: 'Accent Lightness', key: 'accentLight', min: 0, max: 100, type: 'lightness' },
+  ],
+  comment: [
+    { label: 'Comment Lightness', key: 'commentLight', min: 0, max: 100, type: 'lightness' },
+  ],
+};
+
+const SLIDER_GENERATORS: Record<
+  ValidSliderKey,
+  {
+    gradient: (params: any) => string[];
+    preview?: (value: number, params: any) => { color?: string; label?: string };
+  }
+> = {
+  bgHue: { gradient: () => generateHueGradient() },
+  bgSat: { gradient: (params) => generateSaturationGradient(params.bgHue || 0) },
+  bgLight: {
+    gradient: (params) => generateLightnessGradient(params.bgHue || 0, params.bgSat || 50),
+  },
+  accentHue: { gradient: () => generateHueGradient() },
+  accentSat: { gradient: (params) => generateSaturationGradient(params.accentHue || 0) },
+  accentLight: {
+    gradient: (params) => generateLightnessGradient(params.accentHue || 0, params.accentSat || 70),
+  },
+  commentLight: {
+    gradient: (params) => generateLightnessGradient((params.bgHue || 0) + 180, 15),
+  },
+};
+
+interface ThemeDropdownProps {
+  activeTheme: ThemeKey;
+  onSelect: (theme: ThemeKey) => void;
+  pageColors: Base24Colors;
+}
+
+const ThemeDropdown: React.FC<ThemeDropdownProps> = ({ activeTheme, onSelect, pageColors }) => {
+  const [availableThemes, setAvailableThemes] = React.useState<ThemeKey[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadThemes = async () => {
+      await themeLoader.waitForLoad();
+      const themes = themeLoader.getAllThemeKeys();
+      setAvailableThemes(themes);
+      setIsLoading(false);
+    };
+
+    loadThemes();
+  }, []);
+
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    onSelect(event.target.value as ThemeKey);
+  };
+
+  const getThemeDisplayName = (themeKey: ThemeKey): string => {
+    const themeInfo = themeLoader.getThemeInfo(themeKey);
+    return themeInfo ? themeInfo.name : themeKey;
+  };
+
+  const getThemeDescription = (themeKey: ThemeKey): string => {
+    const themeInfo = themeLoader.getThemeInfo(themeKey);
+    return themeInfo ? themeInfo.tagline : '';
+  };
+
+  if (isLoading) {
+    return (
+      <div className="mb-6">
+        <h3 style={{ color: pageColors.base0E }} className="text-center text-lg font-semibold mb-4">
+          🎯 Loading Themes...
+        </h3>
+        <div className="text-center" style={{ color: pageColors.base04 }}>
+          Discovering themes from directory...
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`mb-6 ${className}`}>
+    <div className="mb-6">
       <h3 style={{ color: pageColors.base0E }} className="text-center text-lg font-semibold mb-4">
-        {title}
+        🎯 Select Base Theme to Customize
       </h3>
 
-      {variant === 'theme' ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
-          {items.map((item, index) => {
-            const rendered = renderItem(item);
-            return (
-              <button
-                key={index}
-                onClick={() => onSelect(item)}
-                title={rendered.inspiration}
-                style={{
-                  background: activeItem === item ? pageColors.base02 : pageColors.base01,
-                  border: `2px solid ${activeItem === item ? pageColors.base0D : pageColors.base02}`,
-                  color: pageColors.base05,
-                }}
-                className="rounded-lg p-3 cursor-pointer transition-all duration-200 hover:scale-105 text-left"
-              >
-                <div className="font-bold text-sm mb-1">{rendered.label}</div>
-                {rendered.description && (
-                  <div style={{ color: pageColors.base04 }} className="text-xs leading-tight">
-                    {rendered.description}
-                  </div>
-                )}
-                {activeItem === item && (
-                  <div style={{ color: pageColors.base0D }} className="mt-2 text-xs font-bold">
-                    ✨ Selected
-                  </div>
-                )}
-              </button>
-            );
-          })}
+      <div className="max-w-md mx-auto">
+        <select
+          value={activeTheme}
+          onChange={handleChange}
+          style={{
+            background: pageColors.base01,
+            border: `2px solid ${pageColors.base02}`,
+            color: pageColors.base05,
+          }}
+          className="w-full px-4 py-3 rounded-lg text-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {availableThemes.map((themeKey) => (
+            <option
+              key={themeKey}
+              value={themeKey}
+              style={{
+                background: pageColors.base01,
+                color: pageColors.base05,
+              }}
+            >
+              {getThemeDisplayName(themeKey)}
+            </option>
+          ))}
+        </select>
+
+        <div className="mt-2 text-center">
+          <div style={{ color: pageColors.base04 }} className="text-sm">
+            {getThemeDescription(activeTheme)}
+          </div>
+          <div style={{ color: pageColors.base03 }} className="text-xs mt-1">
+            {availableThemes.length} themes available
+          </div>
         </div>
-      ) : (
-        <div className="flex gap-4 justify-center mb-4 flex-wrap">
-          {items.map((item, index) => {
-            const rendered = renderItem(item);
-            return (
-              <Button
-                key={index}
-                onClick={() => onSelect(item)}
-                variant={activeItem === item ? 'gradientWarm' : 'secondary'}
-                active={activeItem === item}
-                colors={pageColors}
-                className="text-sm py-3 px-6 capitalize font-semibold"
-              >
-                {rendered.label}
-              </Button>
-            );
-          })}
-        </div>
-      )}
+      </div>
     </div>
   );
+};
+
+interface FlavorSelectorProps {
+  activeFlavor: FlavorKey;
+  onSelect: (flavor: FlavorKey) => void;
+  pageColors: Base24Colors;
 }
+
+const FlavorSelector: React.FC<FlavorSelectorProps> = ({ activeFlavor, onSelect, pageColors }) => {
+  const flavorDescriptions: Record<FlavorKey, string> = {
+    muted: 'Gentle, softer colors for relaxed environments',
+    balanced: 'Harmonious colors for everyday use',
+    bold: 'High contrast colors for maximum readability',
+  };
+
+  const getAllFlavorKeys = (): FlavorKey[] => ['muted', 'balanced', 'bold'];
+
+  return (
+    <div className="mb-6">
+      <h3 style={{ color: pageColors.base0E }} className="text-center text-lg font-semibold mb-4">
+        🎭 Choose Flavor Intensity
+      </h3>
+
+      <div className="flex justify-center gap-3 mb-4">
+        {getAllFlavorKeys().map((flavor) => (
+          <Button
+            key={flavor}
+            onClick={() => onSelect(flavor)}
+            variant="primary"
+            active={activeFlavor === flavor}
+            colors={pageColors}
+            className="px-4 py-2 text-sm font-medium capitalize"
+          >
+            {flavor}
+          </Button>
+        ))}
+      </div>
+
+      <div className="text-center">
+        <div style={{ color: pageColors.base04 }} className="text-sm max-w-md mx-auto">
+          {flavorDescriptions[activeFlavor]}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface HeaderProps {
   pageColors: Base24Colors;
@@ -103,19 +234,39 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ pageColors }) => (
   <div className="text-center mb-8">
-    <h1
-      className="text-4xl font-bold mb-3"
-      style={{
-        background: `linear-gradient(135deg, ${pageColors.base0E}, ${pageColors.base08})`,
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-      }}
-    >
-      ✨ Lumina Theme Generator
+    <h1 className="text-4xl font-bold mb-3">
+      <span style={{ color: pageColors.base05 }}>✨ </span>
+      <span
+        className="gradient-text"
+        style={
+          {
+            '--gradient': `linear-gradient(90deg, ${pageColors.base08}, ${pageColors.base09}, ${pageColors.base0A}, ${pageColors.base0B}, ${pageColors.base0C}, ${pageColors.base0D}, ${pageColors.base0E})`,
+            color: pageColors.base05,
+          } as React.CSSProperties
+        }
+      >
+        Lumina Theme Generator
+      </span>
     </h1>
     <p style={{ color: pageColors.base04 }} className="mb-6">
       Create beautiful Base24 themes for Neovim and terminals
     </p>
+    <style>{`
+      .gradient-text {
+        background: var(--gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: inline-block;
+      }
+
+      /* Fallback for browsers that don't support background-clip: text */
+      @supports not (-webkit-background-clip: text) {
+        .gradient-text {
+          -webkit-text-fill-color: initial;
+        }
+      }
+    `}</style>
   </div>
 );
 
@@ -127,6 +278,7 @@ interface CustomizePanelProps {
   flavor: FlavorKey;
   pageColors: Base24Colors;
   onExpandChange: (expanded: boolean) => void;
+  themeLogic: any;
 }
 
 const CustomizePanel: React.FC<CustomizePanelProps> = ({
@@ -137,6 +289,7 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
   flavor,
   pageColors,
   onExpandChange,
+  themeLogic,
 }) => {
   const [isExpanded, setIsExpanded] = React.useState(true);
 
@@ -145,8 +298,17 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
     onExpandChange(expanded);
   };
 
-  const getSliderProps = (configKey: keyof ThemeParams) => {
+  const getSliderProps = (configKey: ValidSliderKey) => {
     const generator = SLIDER_GENERATORS[configKey];
+    if (!generator) {
+      console.warn(`No generator found for ${configKey}`);
+      return {
+        gradientColors: ['#000', '#fff'],
+        previewColor: undefined,
+        previewLabel: undefined,
+      };
+    }
+
     const gradient = generator.gradient(params);
     const preview = generator.preview
       ? generator.preview(params[configKey], params)
@@ -247,6 +409,23 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
             })}
           </div>
 
+          <div className="mb-5">
+            <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
+              Individual Color Adjustments
+            </h4>
+            <div style={{ color: pageColors.base04 }} className="text-xs mb-3">
+              Click accent colors to fine-tune their hue for better visibility
+            </div>
+            <ColorPaletteEditor
+              colors={themeLogic.colors}
+              params={themeLogic.getCurrentParams()}
+              selectedColorKey={themeLogic.selectedColorKey}
+              onColorSelect={themeLogic.setSelectedColor}
+              onColorAdjust={themeLogic.updateColorAdjustment}
+              onResetToDefault={themeLogic.resetColorToDefault}
+            />
+          </div>
+
           <div className="flex gap-2">
             <Button
               onClick={resetToFlavor}
@@ -280,38 +459,14 @@ interface PreviewPanelProps {
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({ colors, activeTab, setActiveTab }) => {
   const renderPreviewContent = () => {
-    if (activeTab === 'colors') {
-      return (
-        <div
-          style={{ background: colors.base00, color: colors.base05 }}
-          className="p-4 rounded border border-white border-opacity-10"
-        >
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            {Object.entries(COLOR_GROUPS).map(([groupName, colorData]) => (
-              <ColorList
-                key={groupName}
-                title={`${groupName.charAt(0).toUpperCase() + groupName.slice(1)} Colors`}
-                colors={colors}
-                colorData={colorData}
-              />
-            ))}
-          </div>
-          <div className="mt-5">
-            <h4 className="text-base mb-3">Color Palette</h4>
-            {Object.values(COLOR_GROUPS).map((group, i) => (
-              <ColorPalette key={i} colors={colors} colorKeys={group.map(({ key }) => key)} />
-            ))}
-          </div>
-        </div>
-      );
-    }
-
     if (activeTab === 'ui-preview') {
       return <UIPreview colors={colors} />;
     }
 
     return <SyntaxPreview colors={colors} language={activeTab} />;
   };
+
+  const availableTabs = TABS;
 
   return (
     <div
@@ -326,7 +481,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ colors, activeTab, setActiv
       </h3>
 
       <div className="flex gap-1 mb-4 border-b pb-2" style={{ borderColor: colors.base02 }}>
-        {TABS.map((tab) => (
+        {availableTabs.map((tab) => (
           <Button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -349,6 +504,7 @@ interface ExportPanelProps {
   exportNvimTheme: () => void;
   exportTheme: () => void;
   exportStylixTheme: () => void;
+  exportThemeDefinition: () => void;
   copyThemeParams: () => void;
   copied: boolean;
   pageColors: Base24Colors;
@@ -358,6 +514,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
   exportNvimTheme,
   exportTheme,
   exportStylixTheme,
+  exportThemeDefinition,
   copyThemeParams,
   copied,
   pageColors,
@@ -406,7 +563,18 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         colors={pageColors}
         className="px-4 py-3 text-sm font-bold"
       >
-        📊 Parameters
+        📊 Raw Data
+      </Button>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-1 gap-3 mb-4">
+      <Button
+        onClick={exportThemeDefinition}
+        variant="primary"
+        colors={pageColors}
+        className="px-4 py-3 text-sm font-bold"
+      >
+        📁 Theme Definition JSON
       </Button>
     </div>
 
@@ -434,7 +602,10 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
           <strong>Stylix:</strong> Nix system-wide theming
         </div>
         <div>
-          <strong>Parameters:</strong> Raw values for tweaking
+          <strong>Raw Data:</strong> Complete state dump
+        </div>
+        <div>
+          <strong>Theme Definition:</strong> Installable theme file
         </div>
       </div>
     </div>
@@ -445,12 +616,18 @@ const App: React.FC = () => {
   const themeLogic = useThemeLogic();
   const [isCustomizePanelExpanded, setIsCustomizePanelExpanded] = React.useState(true);
 
+  React.useEffect(() => {
+    if (themeLogic.activeTab === 'colors') {
+      themeLogic.setActiveTab('ui-preview');
+    }
+  }, [themeLogic.activeTab]);
+
   return (
     <div
       className="min-h-screen p-5 font-sans"
       style={{
         background:
-          themeLogic.params.bgLight > 50
+          themeLogic.getCurrentParams().bgLight > 50
             ? `linear-gradient(135deg, ${themeLogic.pageColors.base00}, ${themeLogic.pageColors.base02})`
             : `linear-gradient(135deg, ${themeLogic.pageColors.base00}, ${themeLogic.pageColors.base01})`,
         color: themeLogic.pageColors.base05,
@@ -459,33 +636,22 @@ const App: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <Header pageColors={themeLogic.pageColors} />
 
-        <Selector
-          title="🎯 Select Base Theme to Customize"
-          items={getAllThemeKeys()}
-          activeItem={themeLogic.activeTheme}
-          onSelect={themeLogic.switchTheme}
-          pageColors={themeLogic.pageColors}
-          variant="theme"
-          renderItem={(themeKey) => {
-            const theme = getBaseTheme(themeKey);
-            return {
-              label: theme.name,
-              description: theme.tagline,
-              inspiration: `${theme.tagline} - Inspired by: ${theme.inspirations}`,
-            };
+        <ThemeDropdown
+          activeTheme={themeLogic.activeTheme}
+          onSelect={(theme) => {
+            console.log('Switching to theme:', theme);
+            themeLogic.switchTheme(theme);
           }}
+          pageColors={themeLogic.pageColors}
         />
 
-        <Selector
-          title="🎭 Choose Flavor Intensity"
-          items={getAllFlavorKeys()}
-          activeItem={themeLogic.flavor}
-          onSelect={themeLogic.switchFlavor}
+        <FlavorSelector
+          activeFlavor={themeLogic.activeFlavor}
+          onSelect={(flavor) => {
+            console.log('Switching to flavor:', flavor);
+            themeLogic.switchFlavor(flavor);
+          }}
           pageColors={themeLogic.pageColors}
-          variant="flavor"
-          renderItem={(flavorKey) => ({
-            label: flavorKey,
-          })}
         />
 
         <div
@@ -496,9 +662,9 @@ const App: React.FC = () => {
           everyday use • <strong>Bold:</strong> High contrast, maximum readability
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 mb-8">
+        <div className="flex flex-col xl:flex-row gap-8 mb-8">
           <div
-            className={`${isCustomizePanelExpanded ? 'lg:w-1/2' : 'lg:w-3/4 lg:max-w-4xl lg:mx-auto'} transition-all duration-300`}
+            className={`${isCustomizePanelExpanded ? 'xl:w-3/5' : 'xl:w-4/5 xl:max-w-6xl xl:mx-auto'} transition-all duration-300`}
           >
             <PreviewPanel
               colors={themeLogic.colors}
@@ -508,24 +674,25 @@ const App: React.FC = () => {
           </div>
 
           <div
-            className={`${isCustomizePanelExpanded ? 'lg:w-1/2' : 'lg:w-1/4'} transition-all duration-300`}
+            className={`${isCustomizePanelExpanded ? 'xl:w-2/5' : 'xl:w-1/5'} transition-all duration-300`}
           >
             <CustomizePanel
-              params={themeLogic.params}
+              params={themeLogic.getCurrentParams()}
               updateParam={themeLogic.updateParam}
               resetToFlavor={themeLogic.resetToFlavor}
               resetToTheme={themeLogic.resetToTheme}
-              flavor={themeLogic.flavor}
+              flavor={themeLogic.activeFlavor}
               pageColors={themeLogic.pageColors}
               onExpandChange={setIsCustomizePanelExpanded}
+              themeLogic={themeLogic}
             />
           </div>
         </div>
-
         <ExportPanel
           exportNvimTheme={themeLogic.exportNvimTheme}
           exportTheme={themeLogic.exportTheme}
           exportStylixTheme={themeLogic.exportStylixTheme}
+          exportThemeDefinition={themeLogic.exportThemeDefinition}
           copyThemeParams={themeLogic.copyThemeParams}
           copied={themeLogic.copied}
           pageColors={themeLogic.pageColors}

@@ -1,0 +1,38 @@
+{
+  "name": "Lumina Noon",
+  "tagline": "Golden sunshine and natural warmth",
+  "inspirations": "Golden hour, warm days, contentment, beach afternoons, lazy picnics, comfort",
+  "bgHue": 50,
+  "bgSat": 100,
+  "bgLight": 98,
+  "accentOffsets": {
+    "red": { "hue": 345 },
+    "orange": { "hue": 15 },
+    "yellow": { "hue": 45 },
+    "green": { "hue": 135 },
+    "cyan": { "hue": 165 },
+    "blue": { "hue": 195 },
+    "purple": { "hue": 255 },
+    "pink": { "hue": 315 }
+  },
+  "flavors": {
+    "muted": {
+      "accentHue": -15,
+      "accentSat": 85,
+      "accentLight": 60,
+      "commentLight": 50
+    },
+    "balanced": {
+      "accentHue": -15,
+      "accentSat": 90,
+      "accentLight": 50,
+      "commentLight": 40
+    },
+    "bold": {
+      "accentHue": -15,
+      "accentSat": 95,
+      "accentLight": 40,
+      "commentLight": 30
+    }
+  }
+}

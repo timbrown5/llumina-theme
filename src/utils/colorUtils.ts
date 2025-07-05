@@ -1,4 +1,4 @@
-import type { ThemeParams, Base24Colors } from '../types/index.ts';
+import type { ThemeParams, Base24Colors, AccentColorKey } from '../types/index.ts';
 import { lab, formatHex } from 'culori';
 
 // Convert HSL values to hex color string
@@ -49,12 +49,10 @@ export const hslToRgb = (h: number, s: number, l: number): string => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
-// Scientific perceptual adjustment using CIE LAB color space
 const adjustColorPerceptually = (h: number, s: number, l: number): string => {
   const basicColor = hslToRgb(h, s, l);
 
   try {
-    // Convert basic color to LAB using hex string
     const labColor = lab(basicColor);
     if (!labColor || typeof labColor.l !== 'number') {
       return basicColor;
@@ -66,27 +64,22 @@ const adjustColorPerceptually = (h: number, s: number, l: number): string => {
 
     let targetLightness = labColor.l;
 
-    // Only apply adjustments if chroma is significantly high
     if (chroma > 35) {
       if (normalizedHue >= 70 && normalizedHue <= 130) {
-        // Yellow-green: gentle reduction
         if (targetLightness > 65) {
-          targetLightness = targetLightness * 0.96;
+          targetLightness = targetLightness * 0.94;
         }
       } else if (normalizedHue >= 130 && normalizedHue <= 180) {
-        // Pure green: minimal adjustment
-        if (targetLightness > 70) {
-          targetLightness = targetLightness * 0.98;
+        if (targetLightness > 60) {
+          targetLightness = targetLightness * 0.88;
         }
       } else if (normalizedHue >= 180 && normalizedHue <= 220) {
-        // Cyan: slight adjustment
         if (targetLightness > 75) {
-          targetLightness = targetLightness * 0.97;
+          targetLightness = targetLightness * 0.95;
         }
       }
     }
 
-    // Apply lightness adjustment if needed
     if (Math.abs(targetLightness - labColor.l) > 0.1) {
       const adjustedLabColor = { ...labColor, l: targetLightness };
       const result = formatHex(adjustedLabColor);
@@ -102,7 +95,6 @@ const adjustColorPerceptually = (h: number, s: number, l: number): string => {
   }
 };
 
-// Enhanced HSL conversion with CIE LAB adjustments
 export const adjustedHslToRgb = (h: number, s: number, l: number): string => {
   return adjustColorPerceptually(h, s, l);
 };
@@ -142,7 +134,6 @@ export const generateLightnessGradient = (hue: number, saturation: number): stri
   hslToRgb(hue, saturation, 100),
 ];
 
-// Calculate muted color lightness
 const getMutedLightness = (accentLightness: number): number => {
   const minDifference = 8;
   const maxDifference = 18;
@@ -154,8 +145,58 @@ const getMutedLightness = (accentLightness: number): number => {
   return Math.min(maxMutedLightness, accentLightness + difference);
 };
 
-// Generate complete Base24 color palette
-export const generateColors = (params: ThemeParams): Base24Colors => {
+// Helper function to get the calculated hue for a specific accent color
+export const getCalculatedAccentHue = (
+  params: ThemeParams,
+  colorIndex: number,
+  standardOffsets: number[]
+): number => {
+  const accentOffsets = [
+    params.redOffset ?? standardOffsets[0],
+    params.orangeOffset ?? standardOffsets[1],
+    params.yellowOffset ?? standardOffsets[2],
+    params.greenOffset ?? standardOffsets[3],
+    params.cyanOffset ?? standardOffsets[4],
+    params.blueOffset ?? standardOffsets[5],
+    params.purpleOffset ?? standardOffsets[6],
+    params.pinkOffset ?? standardOffsets[7],
+  ];
+
+  let hue = params.accentHue + accentOffsets[colorIndex];
+  while (hue < 0) hue += 360;
+  while (hue >= 360) hue -= 360;
+  return hue;
+};
+
+// Helper function to get the final hue including user adjustments
+export const getFinalAccentHue = (
+  params: ThemeParams,
+  colorKey: AccentColorKey,
+  standardOffsets: number[]
+): number => {
+  const colorIndex = [
+    'base08',
+    'base09',
+    'base0A',
+    'base0B',
+    'base0C',
+    'base0D',
+    'base0E',
+    'base0F',
+  ].indexOf(colorKey);
+  const calculatedHue = getCalculatedAccentHue(params, colorIndex, standardOffsets);
+  const adjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+
+  let finalHue = calculatedHue + adjustment;
+  while (finalHue < 0) finalHue += 360;
+  while (finalHue >= 360) finalHue -= 360;
+  return finalHue;
+};
+
+export const generateColors = (params: ThemeParams, standardOffsets?: number[]): Base24Colors => {
+  // Use provided offsets or fall back to standard Base16 offsets
+  const offsets = standardOffsets || [0, 30, 60, 150, 180, 210, 270, 330];
+
   const isLight = params.bgLight > 50;
 
   // Background colors
@@ -175,32 +216,51 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
   const commentHue = (params.bgHue + (isLight ? 180 : 0)) % 360;
   const base03 = hslToRgb(commentHue, 15, params.commentLight);
 
-  // Foreground colors
-  const fgLight = isLight ? 15 : 85;
-  const base04 = hslToRgb(params.bgHue, 20, Math.max(0, Math.min(100, fgLight + 15)));
-  const base05 = hslToRgb(params.bgHue, 15, fgLight);
-  const base06 = hslToRgb(params.bgHue, 12, Math.max(0, Math.min(100, fgLight - 5)));
-  const base07 = hslToRgb(params.bgHue, 10, Math.max(0, Math.min(100, fgLight - 10)));
+  // Automatically determine foreground lightness based on background
+  const autoForegroundLight = isLight ? 5 : 95;
+  const base05 = hslToRgb(params.bgHue, 15, autoForegroundLight); // Main text
 
-  // Accent color hue positions
-  const accentHueOffsets = [0, 30, 60, 120, 180, 210, 270, 330];
-  const accentHues = accentHueOffsets.map((offset) => {
-    let hue = params.accentHue + offset;
-    while (hue < 0) hue += 360;
-    while (hue >= 360) hue -= 360;
-    return hue;
+  // base04: Secondary text - 15% less contrast than main text
+  const base04Light = isLight
+    ? Math.min(100, autoForegroundLight + 15)
+    : Math.max(0, autoForegroundLight - 15);
+  const base04 = hslToRgb(params.bgHue, 20, base04Light);
+
+  // base06: Light surface/panel background
+  const base06Hue = (params.bgHue + (isLight ? -60 : 60) + 360) % 360;
+  const base06 = isLight
+    ? hslToRgb(base06Hue, params.bgSat, 20) // Dark surface for light themes
+    : hslToRgb(base06Hue, params.bgSat, 80); // Light surface for dark themes
+
+  // base07: Compatible light accent - use a warmer/cooler variation
+  const base07Hue = (params.bgHue + (isLight ? 60 : -60) + 360) % 360;
+  const base07 = isLight
+    ? hslToRgb(base07Hue, params.bgSat, 20) // Very dark for light themes
+    : hslToRgb(base07Hue, params.bgSat, 80); // Very light for dark themes
+
+  // Generate accent colors with individual adjustments
+  const accentColorKeys: AccentColorKey[] = [
+    'base08',
+    'base09',
+    'base0A',
+    'base0B',
+    'base0C',
+    'base0D',
+    'base0E',
+    'base0F',
+  ];
+
+  const accents = accentColorKeys.map((colorKey) => {
+    const finalHue = getFinalAccentHue(params, colorKey, offsets);
+    return adjustedHslToRgb(finalHue, params.accentSat, params.accentLight);
   });
 
-  // Generate accent colors with CIE LAB-based perceptual adjustments
-  const accents = accentHues.map((hue) => {
-    return adjustedHslToRgb(hue, params.accentSat, params.accentLight);
-  });
-
-  // Generate muted colors
+  // Generate muted colors using the same final hues
   const mutedSat = Math.max(25, params.accentSat * 0.7);
   const mutedLight = getMutedLightness(params.accentLight);
-  const muted = accentHues.map((hue) => {
-    return adjustedHslToRgb(hue, mutedSat, mutedLight);
+  const muted = accentColorKeys.map((colorKey) => {
+    const finalHue = getFinalAccentHue(params, colorKey, offsets);
+    return adjustedHslToRgb(finalHue, mutedSat, mutedLight);
   });
 
   return {
@@ -214,19 +274,19 @@ export const generateColors = (params: ThemeParams): Base24Colors => {
     base07,
     base08: accents[0], // Red
     base09: accents[1], // Orange
-    base0A: accents[2], // Yellow (CIE LAB adjusted)
-    base0B: accents[3], // Green (CIE LAB adjusted)
-    base0C: accents[4], // Cyan (CIE LAB adjusted)
+    base0A: accents[2], // Yellow
+    base0B: accents[3], // Green
+    base0C: accents[4], // Cyan
     base0D: accents[5], // Blue
     base0E: accents[6], // Purple
     base0F: accents[7], // Pink
-    base10: muted[0],
-    base11: muted[1],
-    base12: muted[2],
-    base13: muted[3],
-    base14: muted[4],
-    base15: muted[5],
-    base16: muted[6],
-    base17: muted[7],
+    base10: muted[0], // Muted Red
+    base11: muted[1], // Muted Orange
+    base12: muted[2], // Muted Yellow
+    base13: muted[3], // Muted Green
+    base14: muted[4], // Muted Cyan
+    base15: muted[5], // Muted Blue
+    base16: muted[6], // Muted Purple
+    base17: muted[7], // Muted Pink
   };
 };

@@ -1,0 +1,38 @@
+{
+  "name": "Lumina Twilight",
+  "tagline": "The deep blue of the last light of the day",
+  "inspirations": "Fading light, peaceful evenings, blue hour, tranquility, rest",
+  "bgHue": 242,
+  "bgSat": 40,
+  "bgLight": 12,
+  "accentOffsets": {
+    "red": { "hue": 0 },
+    "orange": { "hue": 30 },
+    "yellow": { "hue": 45 },
+    "green": { "hue": 140 },
+    "cyan": { "hue": 170 },
+    "blue": { "hue": 210 },
+    "purple": { "hue": 270 },
+    "pink": { "hue": 330 }
+  },
+  "flavors": {
+    "muted": {
+      "accentHue": 0,
+      "accentSat": 85,
+      "accentLight": 75,
+      "commentLight": 55
+    },
+    "balanced": {
+      "accentHue": 0,
+      "accentSat": 90,
+      "accentLight": 65,
+      "commentLight": 55
+    },
+    "bold": {
+      "accentHue": 0,
+      "accentSat": 95,
+      "accentLight": 55,
+      "commentLight": 60
+    }
+  }
+}

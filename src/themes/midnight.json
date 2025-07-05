@@ -1,0 +1,38 @@
+{
+  "name": "Lumina Midnight",
+  "tagline": "Deep darkness with electric neon accents",
+  "inspirations": "City lights, dark nights, energy, excitement, neon signs, nightlife",
+  "bgHue": 270,
+  "bgSat": 25,
+  "bgLight": 6,
+  "accentOffsets": {
+    "red": { "hue": 0 },
+    "orange": { "hue": 30 },
+    "yellow": { "hue": 55 },
+    "green": { "hue": 140 },
+    "cyan": { "hue": 170 },
+    "blue": { "hue": 210 },
+    "purple": { "hue": 270 },
+    "pink": { "hue": 330 }
+  },
+  "flavors": {
+    "muted": {
+      "accentHue": 0,
+      "accentSat": 85,
+      "accentLight": 75,
+      "commentLight": 55
+    },
+    "balanced": {
+      "accentHue": 0,
+      "accentSat": 95,
+      "accentLight": 60,
+      "commentLight": 55
+    },
+    "bold": {
+      "accentHue": 0,
+      "accentSat": 100,
+      "accentLight": 50,
+      "commentLight": 60
+    }
+  }
+}
