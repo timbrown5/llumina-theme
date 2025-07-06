@@ -1,34 +1,5 @@
 import type { Base24Colors, FlavorKey, ThemeParams, AccentColorKey } from '../types/index.ts';
-
-const getColorDescription = (key: string): string => {
-  const descriptions: Record<string, string> = {
-    base00: 'Primary Background',
-    base01: 'Secondary Background',
-    base02: 'Selection Background',
-    base03: 'Comments',
-    base04: 'Secondary Foreground (Low Contrast)',
-    base05: 'Primary Foreground (Main Text)',
-    base06: 'Emphasized Foreground',
-    base07: 'Strong Emphasis (High Contrast)',
-    base08: 'Red',
-    base09: 'Orange',
-    base0A: 'Yellow',
-    base0B: 'Green',
-    base0C: 'Cyan',
-    base0D: 'Blue',
-    base0E: 'Purple',
-    base0F: 'Pink',
-    base10: 'Muted Red',
-    base11: 'Muted Orange',
-    base12: 'Muted Yellow',
-    base13: 'Muted Green',
-    base14: 'Muted Cyan',
-    base15: 'Muted Blue',
-    base16: 'Muted Purple',
-    base17: 'Muted Pink',
-  };
-  return descriptions[key] || key;
-};
+import { Base24 } from '../classes/Base24.ts';
 
 export const createNvimTheme = (
   colors: Base24Colors,
@@ -98,16 +69,7 @@ end
 return colors`;
 
 export const createBase24Json = (colors: Base24Colors, themeName: string): string =>
-  JSON.stringify(
-    {
-      name: themeName,
-      scheme: 'base24',
-      author: 'Lumina Theme Generator',
-      colors: colors,
-    },
-    null,
-    2
-  );
+  Base24.createBase24Json(colors, themeName);
 
 export const createStylixTheme = (
   colors: Base24Colors,
@@ -126,7 +88,7 @@ export const createStylixTheme = (
 
     base16Scheme = {
 ${Object.entries(colors)
-  .map(([key, value]) => `      ${key} = "${value.slice(1)}"; # ${getColorDescription(key)}`)
+  .map(([key, value]) => `      ${key} = "${value.slice(1)}"; # ${Base24.getColorDescription(key)}`)
   .join('\n')}
 
       scheme = "${nixThemeName}";
@@ -145,23 +107,13 @@ ${Object.entries(colors)
 }`;
 };
 
-// Helper function to calculate final hue for a color including adjustments
 const getFinalHueForColor = (
   params: ThemeParams,
   colorKey: AccentColorKey,
-  standardOffsets: number[] = [0, 30, 60, 150, 180, 210, 270, 330]
+  standardOffsets: number[] = Base24.STANDARD_OFFSETS
 ): number => {
   const baseHue = params.accentHue || 0;
-  const colorIndex = [
-    'base08',
-    'base09',
-    'base0A',
-    'base0B',
-    'base0C',
-    'base0D',
-    'base0E',
-    'base0F',
-  ].indexOf(colorKey);
+  const colorIndex = Base24.getAccentColorIndex(colorKey);
   const standardOffset = standardOffsets[colorIndex] || 0;
   const customOffset = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
 
@@ -172,7 +124,6 @@ const getFinalHueForColor = (
   return Math.round(finalHue);
 };
 
-// New function to create theme JSON that matches your /src/themes/ format
 export const createThemeJson = (
   params: ThemeParams,
   themeName: string,
@@ -180,7 +131,6 @@ export const createThemeJson = (
   themeInspirations: string,
   currentFlavor: FlavorKey
 ): string => {
-  // Calculate final hues for all accent colors including user adjustments
   const accentColors = {
     red: { hue: getFinalHueForColor(params, 'base08') },
     orange: { hue: getFinalHueForColor(params, 'base09') },
@@ -192,7 +142,6 @@ export const createThemeJson = (
     pink: { hue: getFinalHueForColor(params, 'base0F') },
   };
 
-  // Create flavors object - use current params for the active flavor
   const flavors = {
     muted: {
       accentHue: currentFlavor === 'muted' ? params.accentHue : 0,
@@ -223,40 +172,6 @@ export const createThemeJson = (
     bgLight: params.bgLight,
     accentOffsets: accentColors,
     flavors,
-  };
-
-  return JSON.stringify(themeDefinition, null, 2);
-};
-
-// Function to create a complete theme package with all variants
-export const createCompleteThemeJson = (
-  baseParams: ThemeParams,
-  themeName: string,
-  themeTagline: string,
-  themeInspirations: string,
-  allFlavorParams: { muted: any; balanced: any; bold: any }
-): string => {
-  // Calculate final hues for all accent colors including user adjustments
-  const accentOffsets = {
-    red: { hue: getFinalHueForColor(baseParams, 'base08') },
-    orange: { hue: getFinalHueForColor(baseParams, 'base09') },
-    yellow: { hue: getFinalHueForColor(baseParams, 'base0A') },
-    green: { hue: getFinalHueForColor(baseParams, 'base0B') },
-    cyan: { hue: getFinalHueForColor(baseParams, 'base0C') },
-    blue: { hue: getFinalHueForColor(baseParams, 'base0D') },
-    purple: { hue: getFinalHueForColor(baseParams, 'base0E') },
-    pink: { hue: getFinalHueForColor(baseParams, 'base0F') },
-  };
-
-  const themeDefinition = {
-    name: themeName,
-    tagline: themeTagline,
-    inspirations: themeInspirations,
-    bgHue: baseParams.bgHue,
-    bgSat: baseParams.bgSat,
-    bgLight: baseParams.bgLight,
-    accentOffsets,
-    flavors: allFlavorParams,
   };
 
   return JSON.stringify(themeDefinition, null, 2);

@@ -1,5 +1,7 @@
 import { themeLoader } from '../utils/themeLoader.ts';
 import { generateColors } from '../utils/colorUtils.ts';
+import { Theme } from './Theme.ts';
+
 import {
   createNvimTheme,
   createBase24Json,
@@ -25,17 +27,24 @@ export class ThemeManager {
   private flavorParams: any;
 
   constructor() {
-    this.loadThemeAndFlavor('midnight', 'balanced');
-  }
+    this.activeTheme = 'midnight';
+    this.activeFlavor = 'balanced';
+    this.selectedColorKey = null;
 
+    // Let the Theme class handle everything - it knows how to load and combine data correctly
+    const theme = new Theme('midnight');
+    this.currentParams = theme.getDefaultParams('balanced');
+    this.baseThemeParams = { ...this.currentParams };
+
+    // We might not even need flavorParams if Theme class handles it
+    this.flavorParams = {}; // Or remove this entirely
+  }
   private loadThemeAndFlavor(themeKey: ThemeKey, flavorKey: FlavorKey) {
     const theme = themeLoader.getTheme(themeKey);
 
-    // Try to get flavor from theme definition first, then fall back to default
     const flavor =
       themeLoader.getThemeFlavor(themeKey, flavorKey) || themeLoader.getFlavor(flavorKey);
 
-    // Store old accent hue to calculate proportional movement for existing adjustments
     const oldAccentHue = this.currentParams?.accentHue || 0;
     const newAccentHue = flavor.accentHue;
 
@@ -52,14 +61,14 @@ export class ThemeManager {
 
     this.flavorParams = { ...flavor };
 
-    // Preserve existing color adjustments when switching themes/flavors
+    this.initializeThemeColorAdjustments(themeKey);
+
     if (this.currentParams?.colorAdjustments && oldAccentHue !== newAccentHue) {
       const preservedAdjustments = { ...this.currentParams.colorAdjustments };
 
       Object.keys(preservedAdjustments).forEach((colorKey) => {
         const adjustment = preservedAdjustments[colorKey as AccentColorKey];
         if (adjustment) {
-          // Custom offsets stay the same - they're relative to the calculated color
           this.baseThemeParams.colorAdjustments![colorKey as AccentColorKey] = { ...adjustment };
         }
       });
@@ -68,6 +77,58 @@ export class ThemeManager {
     }
 
     this.currentParams = { ...this.baseThemeParams };
+  }
+
+  private initializeThemeColorAdjustments(themeKey: ThemeKey) {
+    const colorKeys: AccentColorKey[] = [
+      'base08',
+      'base09',
+      'base0A',
+      'base0B',
+      'base0C',
+      'base0D',
+      'base0E',
+      'base0F',
+    ];
+
+    const standardOffsets = [0, 30, 60, 150, 180, 210, 270, 330];
+
+    colorKeys.forEach((colorKey, index) => {
+      const themeOffset = this.getThemeOffsetForKey(themeKey, colorKey);
+      const standardOffset = standardOffsets[index];
+      const themeIntendedAdjustment = themeOffset - standardOffset;
+
+      if (themeIntendedAdjustment !== 0) {
+        if (!this.baseThemeParams.colorAdjustments) {
+          this.baseThemeParams.colorAdjustments = {};
+        }
+        this.baseThemeParams.colorAdjustments[colorKey] = {
+          hueOffset: themeIntendedAdjustment,
+        };
+      }
+    });
+  }
+
+  private getThemeOffsetForKey(themeKey: ThemeKey, colorKey: AccentColorKey): number {
+    const themeDefinition = themeLoader.getThemeDefinition(themeKey);
+
+    if (themeDefinition?.accentOffsets) {
+      const offsets = themeDefinition.accentOffsets;
+      const offsetMap = {
+        base08: offsets.red?.hue ?? 0,
+        base09: offsets.orange?.hue ?? 0,
+        base0A: offsets.yellow?.hue ?? 0,
+        base0B: offsets.green?.hue ?? 0,
+        base0C: offsets.cyan?.hue ?? 0,
+        base0D: offsets.blue?.hue ?? 0,
+        base0E: offsets.purple?.hue ?? 0,
+        base0F: offsets.pink?.hue ?? 0,
+      };
+
+      return offsetMap[colorKey] ?? 0;
+    }
+
+    return 0;
   }
 
   switchTheme(themeKey: ThemeKey) {
@@ -100,7 +161,6 @@ export class ThemeManager {
 
     this.currentParams.accentHue = value;
 
-    // Move all adjusted colors proportionally with the accent hue change
     if (this.currentParams.colorAdjustments) {
       Object.keys(this.currentParams.colorAdjustments).forEach((colorKey) => {
         const adjustment = this.currentParams.colorAdjustments![colorKey as AccentColorKey];
@@ -113,7 +173,6 @@ export class ThemeManager {
 
           let newOffset = newAbsoluteHue - value;
 
-          // Normalize to shortest path
           while (newOffset > 180) newOffset -= 360;
           while (newOffset <= -180) newOffset += 360;
 
@@ -143,6 +202,30 @@ export class ThemeManager {
     return this.currentParams.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
   }
 
+  getThemeOffset(colorKey: AccentColorKey): number {
+    // This should return the theme's offset from standard Base16 position
+    // The theme JSON contains raw offsets, so we return them directly
+    const themeDefinition = themeLoader.getThemeDefinition(this.activeTheme);
+
+    if (themeDefinition?.accentOffsets) {
+      const offsets = themeDefinition.accentOffsets;
+      const offsetMap = {
+        base08: offsets.red?.hue ?? 0,
+        base09: offsets.orange?.hue ?? 0,
+        base0A: offsets.yellow?.hue ?? 0,
+        base0B: offsets.green?.hue ?? 0,
+        base0C: offsets.cyan?.hue ?? 0,
+        base0D: offsets.blue?.hue ?? 0,
+        base0E: offsets.purple?.hue ?? 0,
+        base0F: offsets.pink?.hue ?? 0,
+      };
+
+      return offsetMap[colorKey] ?? 0;
+    }
+
+    return 0;
+  }
+
   updateColorAdjustment(colorKey: AccentColorKey, hueOffset: number) {
     if (!this.currentParams.colorAdjustments) {
       this.currentParams.colorAdjustments = {};
@@ -161,36 +244,100 @@ export class ThemeManager {
     this.resetColorAdjustment(colorKey);
   }
 
-  resetToFlavor() {
-    this.loadThemeAndFlavor(this.activeTheme, this.activeFlavor);
-  }
-
   resetToTheme() {
-    this.loadThemeAndFlavor(this.activeTheme, 'balanced');
+    console.log('RESET: Resetting to theme default');
+
+    // Just reload the theme with balanced flavor and no customizations
     this.activeFlavor = 'balanced';
+    this.selectedColorKey = null;
+
+    // Get the default values from JSON
+    const theme = themeLoader.getTheme(this.activeTheme);
+    const flavor =
+      themeLoader.getThemeFlavor(this.activeTheme, 'balanced') || themeLoader.getFlavor('balanced');
+
+    // Set to exactly what's in the JSON files - no calculations, no adjustments
+    this.currentParams = {
+      bgHue: theme.bgHue,
+      bgSat: theme.bgSat,
+      bgLight: theme.bgLight,
+      accentHue: flavor.accentHue,
+      accentSat: flavor.accentSat,
+      accentLight: flavor.accentLight,
+      commentLight: flavor.commentLight,
+      colorAdjustments: {}, // No user customizations
+    };
+
+    this.baseThemeParams = { ...this.currentParams };
+    this.flavorParams = { ...flavor };
+
+    console.log('RESET: After - currentParams:', JSON.stringify(this.currentParams, null, 2));
   }
 
+  resetToFlavor() {
+    console.log('RESET: Resetting to flavor default');
+
+    this.selectedColorKey = null;
+
+    // Get the default values from JSON for current theme + current flavor
+    const theme = themeLoader.getTheme(this.activeTheme);
+    const flavor =
+      themeLoader.getThemeFlavor(this.activeTheme, this.activeFlavor) ||
+      themeLoader.getFlavor(this.activeFlavor);
+
+    // Set to exactly what's in the JSON files
+    this.currentParams = {
+      bgHue: theme.bgHue,
+      bgSat: theme.bgSat,
+      bgLight: theme.bgLight,
+      accentHue: flavor.accentHue,
+      accentSat: flavor.accentSat,
+      accentLight: flavor.accentLight,
+      commentLight: flavor.commentLight,
+      colorAdjustments: {}, // No user customizations
+    };
+
+    this.baseThemeParams = { ...this.currentParams };
+    this.flavorParams = { ...flavor };
+
+    console.log('RESET: After - currentParams:', JSON.stringify(this.currentParams, null, 2));
+  }
   getCurrentColors(): Base24Colors {
-    // Get theme-specific accent offsets
+    const offsetsArray = this.getAccentOffsetsArray();
+    console.log('COLOR_DEBUG: Theme:', this.activeTheme);
+    console.log('COLOR_DEBUG: Flavor:', this.activeFlavor);
+    console.log('COLOR_DEBUG: AccentHue:', this.currentParams.accentHue);
+    console.log('COLOR_DEBUG: OffsetsArray:', offsetsArray);
+    console.log('COLOR_DEBUG: ColorAdjustments:', this.currentParams.colorAdjustments);
+
+    const colors = generateColors(this.currentParams, offsetsArray);
+
+    // Log some specific colors
+    console.log('COLOR_DEBUG: Generated base0A (yellow):', colors.base0A);
+    console.log('COLOR_DEBUG: Generated base0B (green):', colors.base0B);
+
+    return colors;
+  }
+
+  private getAccentOffsetsArray(): number[] {
+    const standardOffsets = [0, 30, 60, 150, 180, 210, 270, 330];
     const themeDefinition = themeLoader.getThemeDefinition(this.activeTheme);
-    let accentOffsets: number[] = [0, 30, 60, 150, 180, 210, 270, 330]; // Default Base16 offsets
 
     if (themeDefinition?.accentOffsets) {
-      // Use theme's hue values instead of offset values
-      const offsets = themeDefinition.accentOffsets;
-      accentOffsets = [
-        offsets.red?.hue ?? 0,
-        offsets.orange?.hue ?? 30,
-        offsets.yellow?.hue ?? 60,
-        offsets.green?.hue ?? 150,
-        offsets.cyan?.hue ?? 180,
-        offsets.blue?.hue ?? 210,
-        offsets.purple?.hue ?? 270,
-        offsets.pink?.hue ?? 330,
+      const themeOffsets = themeDefinition.accentOffsets;
+      return [
+        standardOffsets[0] + (themeOffsets.red?.hue ?? 0),
+        standardOffsets[1] + (themeOffsets.orange?.hue ?? 0),
+        standardOffsets[2] + (themeOffsets.yellow?.hue ?? 0),
+        standardOffsets[3] + (themeOffsets.green?.hue ?? 0),
+        standardOffsets[4] + (themeOffsets.cyan?.hue ?? 0),
+        standardOffsets[5] + (themeOffsets.blue?.hue ?? 0),
+        standardOffsets[6] + (themeOffsets.purple?.hue ?? 0),
+        standardOffsets[7] + (themeOffsets.pink?.hue ?? 0),
       ];
     }
 
-    return generateColors(this.currentParams, accentOffsets);
+    return standardOffsets;
   }
 
   getCurrentParams(): ThemeParams {
@@ -212,7 +359,6 @@ export class ThemeManager {
   private getFinalHueForColor(colorKey: AccentColorKey): number {
     const baseHue = this.currentParams.accentHue || 0;
 
-    // Get theme-specific offsets
     const themeDefinition = themeLoader.getThemeDefinition(this.activeTheme);
     let themeOffset = 0;
 
@@ -220,18 +366,17 @@ export class ThemeManager {
       const offsets = themeDefinition.accentOffsets;
       const offsetMap = {
         base08: offsets.red?.hue ?? 0,
-        base09: offsets.orange?.hue ?? 30,
-        base0A: offsets.yellow?.hue ?? 60,
-        base0B: offsets.green?.hue ?? 150,
-        base0C: offsets.cyan?.hue ?? 180,
-        base0D: offsets.blue?.hue ?? 210,
-        base0E: offsets.purple?.hue ?? 270,
-        base0F: offsets.pink?.hue ?? 330,
+        base09: offsets.orange?.hue ?? 0,
+        base0A: offsets.yellow?.hue ?? 0,
+        base0B: offsets.green?.hue ?? 0,
+        base0C: offsets.cyan?.hue ?? 0,
+        base0D: offsets.blue?.hue ?? 0,
+        base0E: offsets.purple?.hue ?? 0,
+        base0F: offsets.pink?.hue ?? 0,
       };
 
       themeOffset = offsetMap[colorKey] ?? 0;
     } else {
-      // Fallback to default offsets
       const standardOffsets = [0, 30, 60, 150, 180, 210, 270, 330];
       const colorIndex = [
         'base08',
@@ -286,25 +431,96 @@ export class ThemeManager {
 
   exportThemeJson(): string {
     const themeInfo = this.getThemeInfo();
-    return createThemeJson(
-      this.currentParams,
-      `Lumina ${themeInfo.name}`,
-      themeInfo.tagline,
-      themeInfo.inspirations,
-      this.activeFlavor
-    );
+
+    // Get all current color adjustments and convert them to theme offset format
+    const accentOffsets = {
+      red: { hue: this.getFinalOffsetForColor('base08') },
+      orange: { hue: this.getFinalOffsetForColor('base09') },
+      yellow: { hue: this.getFinalOffsetForColor('base0A') },
+      green: { hue: this.getFinalOffsetForColor('base0B') },
+      cyan: { hue: this.getFinalOffsetForColor('base0C') },
+      blue: { hue: this.getFinalOffsetForColor('base0D') },
+      purple: { hue: this.getFinalOffsetForColor('base0E') },
+      pink: { hue: this.getFinalOffsetForColor('base0F') },
+    };
+
+    // Create flavors object with current params for active flavor
+    const flavors = {
+      muted:
+        this.activeFlavor === 'muted'
+          ? {
+              accentHue: this.currentParams.accentHue,
+              accentSat: this.currentParams.accentSat,
+              accentLight: this.currentParams.accentLight,
+              commentLight: this.currentParams.commentLight,
+            }
+          : this.flavorParams.muted || {
+              accentHue: 0,
+              accentSat: 85,
+              accentLight: 75,
+              commentLight: 55,
+            },
+      balanced:
+        this.activeFlavor === 'balanced'
+          ? {
+              accentHue: this.currentParams.accentHue,
+              accentSat: this.currentParams.accentSat,
+              accentLight: this.currentParams.accentLight,
+              commentLight: this.currentParams.commentLight,
+            }
+          : this.flavorParams.balanced || {
+              accentHue: 0,
+              accentSat: 95,
+              accentLight: 60,
+              commentLight: 55,
+            },
+      bold:
+        this.activeFlavor === 'bold'
+          ? {
+              accentHue: this.currentParams.accentHue,
+              accentSat: this.currentParams.accentSat,
+              accentLight: this.currentParams.accentLight,
+              commentLight: this.currentParams.commentLight,
+            }
+          : this.flavorParams.bold || {
+              accentHue: 0,
+              accentSat: 100,
+              accentLight: 50,
+              commentLight: 60,
+            },
+    };
+
+    const themeDefinition = {
+      name: themeInfo.name,
+      tagline: themeInfo.tagline,
+      inspirations: themeInfo.inspirations,
+      bgHue: this.currentParams.bgHue,
+      bgSat: this.currentParams.bgSat,
+      bgLight: this.currentParams.bgLight,
+      accentOffsets,
+      flavors,
+    };
+
+    return JSON.stringify(themeDefinition, null, 2);
   }
 
-  exportRawData(): string {
-    return JSON.stringify(
-      {
-        activeTheme: this.activeTheme,
-        activeFlavor: this.activeFlavor,
-        params: this.currentParams,
-        colors: this.getCurrentColors(),
-      },
-      null,
-      2
-    );
+  private getFinalOffsetForColor(colorKey: AccentColorKey): number {
+    const standardOffsets = [0, 30, 60, 150, 180, 210, 270, 330];
+    const colorIndex = [
+      'base08',
+      'base09',
+      'base0A',
+      'base0B',
+      'base0C',
+      'base0D',
+      'base0E',
+      'base0F',
+    ].indexOf(colorKey);
+
+    const standardOffset = standardOffsets[colorIndex];
+    const themeOffset = this.getThemeOffsetForKey(this.activeTheme, colorKey);
+    const userAdjustment = this.currentParams.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+
+    return themeOffset + userAdjustment;
   }
 }

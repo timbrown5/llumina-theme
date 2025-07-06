@@ -260,7 +260,6 @@ const Header: React.FC<HeaderProps> = ({ pageColors }) => (
         display: inline-block;
       }
 
-      /* Fallback for browsers that don't support background-clip: text */
       @supports not (-webkit-background-clip: text) {
         .gradient-text {
           -webkit-text-fill-color: initial;
@@ -414,36 +413,46 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
               Individual Color Adjustments
             </h4>
             <div style={{ color: pageColors.base04 }} className="text-xs mb-3">
-              Click accent colors to fine-tune their hue for better visibility
+              Click accent colors to fine-tune their hue. Slider 0 = Standard Base16 spacing.
             </div>
             <ColorPaletteEditor
               colors={themeLogic.colors}
               params={themeLogic.getCurrentParams()}
               selectedColorKey={themeLogic.selectedColorKey}
+              getThemeOffset={themeLogic.getThemeOffset}
               onColorSelect={themeLogic.setSelectedColor}
               onColorAdjust={themeLogic.updateColorAdjustment}
               onResetToDefault={themeLogic.resetColorToDefault}
             />
           </div>
 
-          <div className="flex gap-2">
-            <Button
-              onClick={resetToFlavor}
-              variant="gradientWarm"
-              colors={pageColors}
-              className="text-xs font-bold flex-1"
-            >
-              🔄 Reset to {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
-            </Button>
-
-            <Button
-              onClick={resetToTheme}
-              variant="gradientRed"
-              colors={pageColors}
-              className="text-xs font-bold flex-1"
-            >
-              🔄 Reset Theme
-            </Button>
+          <div className="mb-5">
+            <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
+              Reset Options
+            </h4>
+            <div className="flex gap-3">
+              <Button
+                onClick={resetToFlavor}
+                variant="secondary"
+                colors={pageColors}
+                className="flex-1 px-3 py-2 text-sm"
+              >
+                🔄 Reset to {flavor.charAt(0).toUpperCase() + flavor.slice(1)} Flavor
+              </Button>
+              <Button
+                onClick={resetToTheme}
+                variant="primary"
+                colors={pageColors}
+                className="flex-1 px-3 py-2 text-sm"
+              >
+                🏠 Reset to Theme Default
+              </Button>
+            </div>
+            <div style={{ color: pageColors.base04 }} className="text-xs mt-2 text-center">
+              Reset Flavor: Revert all sliders to current flavor defaults
+              <br />
+              Reset Theme: Clear all customizations and return to base theme + balanced flavor
+            </div>
           </div>
         </>
       )}
@@ -563,7 +572,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         colors={pageColors}
         className="px-4 py-3 text-sm font-bold"
       >
-        📊 Raw Data
+        📄 Theme JSON
       </Button>
     </div>
 
@@ -602,7 +611,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
           <strong>Stylix:</strong> Nix system-wide theming
         </div>
         <div>
-          <strong>Raw Data:</strong> Complete state dump
+          <strong>Theme JSON:</strong> Loadable theme format
         </div>
         <div>
           <strong>Theme Definition:</strong> Installable theme file

@@ -7,13 +7,13 @@
   "bgLight": 15,
   "accentOffsets": {
     "red": { "hue": 0 },
-    "orange": { "hue": 30 },
-    "yellow": { "hue": 60 },
-    "green": { "hue": 120 },
-    "cyan": { "hue": 150 },
-    "blue": { "hue": 180 },
-    "purple": { "hue": 240 },
-    "pink": { "hue": 315 }
+    "orange": { "hue": 0 },
+    "yellow": { "hue": 0 },
+    "green": { "hue": -30 },
+    "cyan": { "hue": -30 },
+    "blue": { "hue": -30 },
+    "purple": { "hue": -30 },
+    "pink": { "hue": -15 }
   },
   "flavors": {
     "muted": {

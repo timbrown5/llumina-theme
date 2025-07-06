@@ -6,14 +6,14 @@
   "bgSat": 100,
   "bgLight": 98,
   "accentOffsets": {
-    "red": { "hue": 345 },
-    "orange": { "hue": 15 },
-    "yellow": { "hue": 45 },
-    "green": { "hue": 135 },
-    "cyan": { "hue": 165 },
-    "blue": { "hue": 195 },
-    "purple": { "hue": 255 },
-    "pink": { "hue": 315 }
+    "red": { "hue": -15 },
+    "orange": { "hue": -15 },
+    "yellow": { "hue": -15 },
+    "green": { "hue": -15 },
+    "cyan": { "hue": -15 },
+    "blue": { "hue": -15 },
+    "purple": { "hue": -15 },
+    "pink": { "hue": -15 }
   },
   "flavors": {
     "muted": {

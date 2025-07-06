@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import type { Base24Colors, AccentColorKey, ThemeParams } from '../types/index.ts';
+import { Base24 } from '../classes/Base24.ts';
 
 const generateOffsetGradient = (baseHue: number): string => {
   const colors = [];
-  // Create gradient from -179 to +180 relative to base hue
   for (let i = 0; i <= 24; i++) {
     const offset = -179 + (359 * i) / 24;
     let hue = baseHue + offset;
@@ -21,6 +21,7 @@ interface ColorAdjustmentPanelProps {
   accentColors: { key: AccentColorKey; name: string }[];
   getCurrentOffset: (colorKey: AccentColorKey) => number;
   getCalculatedHue: (colorKey: AccentColorKey) => number;
+  getThemeOffset: (colorKey: AccentColorKey) => number;
   onColorSelect: (colorKey: AccentColorKey | null) => void;
   onColorAdjust: (colorKey: AccentColorKey, offset: number) => void;
   onResetToDefault: (colorKey: AccentColorKey) => void;
@@ -33,6 +34,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
   accentColors,
   getCurrentOffset,
   getCalculatedHue,
+  getThemeOffset,
   onColorSelect,
   onColorAdjust,
   onResetToDefault,
@@ -41,7 +43,11 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
 
   const currentOffset = getCurrentOffset(selectedColorKey);
-  const calculatedHue = getCalculatedHue(selectedColorKey);
+  const standardOffset = Base24.getStandardOffset(selectedColorKey);
+  const themeOffset = getThemeOffset(selectedColorKey);
+  const standardHue = (params.accentHue + standardOffset + 360) % 360;
+  const currentHue = getCalculatedHue(selectedColorKey);
+  const themeIntendedHue = (params.accentHue + standardOffset + themeOffset + 360) % 360;
 
   useEffect(() => {
     if (!isInputFocused) {
@@ -90,7 +96,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: colors[selectedColorKey] }} />
           <span className="font-medium" style={{ color: colors.base05 }}>
-            {colorName} Hue Offset
+            {colorName} Hue Adjustment
           </span>
         </div>
         <button
@@ -105,7 +111,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
       <div className="space-y-3">
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm" style={{ color: colors.base04 }}>
-            Offset from Default
+            Offset from Standard Base16
           </span>
           <div className="flex items-center gap-1">
             <input
@@ -138,7 +144,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
             onChange={handleRangeChange}
             className="w-full h-4 rounded cursor-pointer outline-none appearance-none"
             style={{
-              background: generateOffsetGradient(calculatedHue),
+              background: generateOffsetGradient(standardHue),
               WebkitAppearance: 'none',
             }}
           />
@@ -168,32 +174,44 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
 
         <div className="space-y-1 text-xs" style={{ color: colors.base04 }}>
           <div>
-            Default {colorName.toLowerCase()}: {calculatedHue}°
+            Standard {colorName.toLowerCase()}: {Math.round(standardHue)}°
+            <span className="opacity-70"> (accent hue + {standardOffset}°)</span>
           </div>
           <div>
-            Current {colorName.toLowerCase()}: {(calculatedHue + currentOffset + 360) % 360}°
+            Current {colorName.toLowerCase()}: {Math.round(currentHue)}°
+            <span className="opacity-70">
+              {' '}
+              (standard + {currentOffset > 0 ? '+' : ''}
+              {currentOffset}°)
+            </span>
           </div>
-          <div>
-            Offset: {currentOffset > 0 ? '+' : ''}
-            {currentOffset}°
-          </div>
+          {themeOffset !== 0 && (
+            <div>
+              Theme's intended: {Math.round(themeIntendedHue)}°
+              <span className="opacity-70">
+                {' '}
+                (standard + {themeOffset > 0 ? '+' : ''}
+                {themeOffset}°)
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
           <div
             className="w-4 h-4 rounded border border-white border-opacity-30"
             style={{
-              backgroundColor: `hsl(${(calculatedHue + currentOffset + 360) % 360}, 70%, 60%)`,
+              backgroundColor: `hsl(${currentHue}, 70%, 60%)`,
             }}
           />
           <span className="text-xs" style={{ color: colors.base04 }}>
-            Preview: {(calculatedHue + currentOffset + 360) % 360}°
+            Preview: {Math.round(currentHue)}°
           </span>
         </div>
 
         <div className="flex gap-2">
           <button
-            onClick={() => onResetToDefault(selectedColorKey)}
+            onClick={() => onColorAdjust(selectedColorKey, 0)}
             className="flex-1 px-2 py-1 text-xs rounded border"
             style={{
               background: colors.base01,
@@ -201,12 +219,28 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
               color: colors.base05,
             }}
           >
-            Reset to Default
+            Reset to Standard (0°)
           </button>
+          {themeOffset !== 0 && (
+            <button
+              onClick={() => onColorAdjust(selectedColorKey, themeOffset)}
+              className="flex-1 px-2 py-1 text-xs rounded border"
+              style={{
+                background: colors.base01,
+                border: `1px solid ${colors.base02}`,
+                color: colors.base05,
+              }}
+            >
+              Reset to Theme ({themeOffset > 0 ? '+' : ''}
+              {themeOffset}°)
+            </button>
+          )}
         </div>
 
         <div className="text-xs opacity-70 text-center" style={{ color: colors.base03 }}>
           Use ← → arrow keys to fine-tune • ESC to close
+          <br />
+          Slider 0 = Standard Base16 color spacing • Adjustments preserved when accent hue rotates
         </div>
       </div>
     </div>
@@ -217,6 +251,7 @@ interface ColorPaletteEditorProps {
   colors: Base24Colors;
   params: ThemeParams;
   selectedColorKey: AccentColorKey | null;
+  getThemeOffset: (colorKey: AccentColorKey) => number;
   onColorSelect: (colorKey: AccentColorKey | null) => void;
   onColorAdjust: (colorKey: AccentColorKey, hueOffset: number) => void;
   onResetToDefault: (colorKey: AccentColorKey) => void;
@@ -226,67 +261,37 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
   colors,
   params,
   selectedColorKey,
+  getThemeOffset,
   onColorSelect,
   onColorAdjust,
   onResetToDefault,
 }) => {
-  const baseColors = [
-    { key: 'base00', name: 'Background' },
-    { key: 'base01', name: 'Alt Background' },
-    { key: 'base02', name: 'Selection' },
-    { key: 'base03', name: 'Comments' },
-    { key: 'base04', name: 'Secondary Text' },
-    { key: 'base05', name: 'Main Text' },
-    { key: 'base06', name: 'Light Surface' },
-    { key: 'base07', name: 'Light Accent' },
-  ];
-
-  const accentColors: { key: AccentColorKey; name: string }[] = [
-    { key: 'base08', name: 'Red' },
-    { key: 'base09', name: 'Orange' },
-    { key: 'base0A', name: 'Yellow' },
-    { key: 'base0B', name: 'Green' },
-    { key: 'base0C', name: 'Cyan' },
-    { key: 'base0D', name: 'Blue' },
-    { key: 'base0E', name: 'Purple' },
-    { key: 'base0F', name: 'Pink' },
-  ];
-
-  const mutedColors = [
-    { key: 'base10', name: 'Muted Red' },
-    { key: 'base11', name: 'Muted Orange' },
-    { key: 'base12', name: 'Muted Yellow' },
-    { key: 'base13', name: 'Muted Green' },
-    { key: 'base14', name: 'Muted Cyan' },
-    { key: 'base15', name: 'Muted Blue' },
-    { key: 'base16', name: 'Muted Purple' },
-    { key: 'base17', name: 'Muted Pink' },
-  ];
+  const colorSections = Base24.COLOR_SECTIONS;
 
   const getCurrentOffset = (colorKey: AccentColorKey): number => {
-    return params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+    const themeOffset = getThemeOffset(colorKey);
+    const userAdjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+
+    const totalOffset = themeOffset + userAdjustment;
+
+    let sliderValue = totalOffset;
+    while (sliderValue > 180) sliderValue -= 360;
+    while (sliderValue <= -180) sliderValue += 360;
+
+    return sliderValue;
   };
 
   const getCalculatedHue = (colorKey: AccentColorKey): number => {
     const baseHue = params.accentHue || 0;
-    const standardOffsets = [0, 30, 60, 150, 180, 210, 270, 330];
-    const colorIndex = [
-      'base08',
-      'base09',
-      'base0A',
-      'base0B',
-      'base0C',
-      'base0D',
-      'base0E',
-      'base0F',
-    ].indexOf(colorKey);
-    const standardOffset = standardOffsets[colorIndex] || 0;
+    const standardOffset = Base24.getStandardOffset(colorKey);
+    const themeOffset = getThemeOffset(colorKey);
+    const userAdjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
 
-    let calculatedHue = baseHue + standardOffset;
-    while (calculatedHue < 0) calculatedHue += 360;
-    while (calculatedHue >= 360) calculatedHue -= 360;
+    let finalHue = baseHue + standardOffset + themeOffset + userAdjustment;
+    while (finalHue < 0) finalHue += 360;
+    while (finalHue >= 360) finalHue -= 360;
 
-    return Math.round(calculatedHue);
+    return finalHue;
   };
 
   const handleColorClick = (colorKey: AccentColorKey) => {
@@ -295,6 +300,13 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
     } else {
       onColorSelect(colorKey);
     }
+  };
+
+  const handleColorAdjust = (colorKey: AccentColorKey, sliderValue: number) => {
+    const themeOffset = getThemeOffset(colorKey);
+    const userAdjustment = sliderValue - themeOffset;
+
+    onColorAdjust(colorKey, userAdjustment);
   };
 
   const ColorRow: React.FC<{
@@ -382,18 +394,24 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
 
   return (
     <div className="space-y-6">
-      <ColorRow title="Base Colors" colors={baseColors} editable={false} />
-      <ColorRow title="Accent Colors (Editable)" colors={accentColors} editable={true} />
-      <ColorRow title="Muted Accent Colors" colors={mutedColors} editable={false} />
+      {colorSections.map((section) => (
+        <ColorRow
+          key={section.title}
+          title={section.title}
+          colors={section.colors}
+          editable={section.editable}
+        />
+      ))}
 
       {selectedColorKey && (
         <ColorAdjustmentPanel
           selectedColorKey={selectedColorKey}
           colors={colors}
           params={params}
-          accentColors={accentColors}
+          accentColors={Base24.ACCENT_COLORS}
           getCurrentOffset={getCurrentOffset}
           getCalculatedHue={getCalculatedHue}
+          getThemeOffset={getThemeOffset}
           onColorSelect={onColorSelect}
           onColorAdjust={onColorAdjust}
           onResetToDefault={onResetToDefault}
@@ -402,8 +420,8 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
 
       {!selectedColorKey && (
         <div className="text-center text-xs opacity-70" style={{ color: colors.base03 }}>
-          💡 Click any accent color (middle row) to fine-tune its hue. Look for the ⚙ icon and
-          enhanced borders!
+          💡 Click any accent color (middle row) to fine-tune its hue. <br />
+          Slider 0 = Standard Base16 color spacing • Adjustments preserved when accent hue rotates
         </div>
       )}
     </div>

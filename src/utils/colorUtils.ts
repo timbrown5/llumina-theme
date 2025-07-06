@@ -1,7 +1,6 @@
 import type { ThemeParams, Base24Colors, AccentColorKey } from '../types/index.ts';
 import { lab, formatHex } from 'culori';
 
-// Convert HSL values to hex color string
 export const hslToRgb = (h: number, s: number, l: number): string => {
   const hNorm = h / 360;
   const sNorm = s / 100;
@@ -99,7 +98,6 @@ export const adjustedHslToRgb = (h: number, s: number, l: number): string => {
   return adjustColorPerceptually(h, s, l);
 };
 
-// Utility functions for UI sliders and gradients
 export const createGradientBg = (colors: string[]): string =>
   `linear-gradient(90deg, ${colors.join(', ')})`;
 
@@ -145,7 +143,6 @@ const getMutedLightness = (accentLightness: number): number => {
   return Math.min(maxMutedLightness, accentLightness + difference);
 };
 
-// Helper function to get the calculated hue for a specific accent color
 export const getCalculatedAccentHue = (
   params: ThemeParams,
   colorIndex: number,
@@ -168,11 +165,10 @@ export const getCalculatedAccentHue = (
   return hue;
 };
 
-// Helper function to get the final hue including user adjustments
 export const getFinalAccentHue = (
   params: ThemeParams,
   colorKey: AccentColorKey,
-  standardOffsets: number[]
+  preCalculatedOffsets: number[]
 ): number => {
   const colorIndex = [
     'base08',
@@ -184,22 +180,22 @@ export const getFinalAccentHue = (
     'base0E',
     'base0F',
   ].indexOf(colorKey);
-  const calculatedHue = getCalculatedAccentHue(params, colorIndex, standardOffsets);
-  const adjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
 
-  let finalHue = calculatedHue + adjustment;
+  // Use the pre-calculated offset directly (it already includes standard + theme offset)
+  const basePosition = preCalculatedOffsets[colorIndex];
+  const userAdjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+
+  let finalHue = params.accentHue + basePosition + userAdjustment;
   while (finalHue < 0) finalHue += 360;
   while (finalHue >= 360) finalHue -= 360;
   return finalHue;
 };
 
 export const generateColors = (params: ThemeParams, standardOffsets?: number[]): Base24Colors => {
-  // Use provided offsets or fall back to standard Base16 offsets
   const offsets = standardOffsets || [0, 30, 60, 150, 180, 210, 270, 330];
 
   const isLight = params.bgLight > 50;
 
-  // Background colors
   const base00 = hslToRgb(params.bgHue, params.bgSat, params.bgLight);
   const base01 = hslToRgb(
     params.bgHue,
@@ -212,33 +208,27 @@ export const generateColors = (params: ThemeParams, standardOffsets?: number[]):
     Math.max(0, Math.min(100, params.bgLight + (isLight ? -8 : 8)))
   );
 
-  // Comments
   const commentHue = (params.bgHue + (isLight ? 180 : 0)) % 360;
   const base03 = hslToRgb(commentHue, 15, params.commentLight);
 
-  // Automatically determine foreground lightness based on background
   const autoForegroundLight = isLight ? 5 : 95;
-  const base05 = hslToRgb(params.bgHue, 15, autoForegroundLight); // Main text
+  const base05 = hslToRgb(params.bgHue, 15, autoForegroundLight);
 
-  // base04: Secondary text - 15% less contrast than main text
   const base04Light = isLight
     ? Math.min(100, autoForegroundLight + 15)
     : Math.max(0, autoForegroundLight - 15);
   const base04 = hslToRgb(params.bgHue, 20, base04Light);
 
-  // base06: Light surface/panel background
   const base06Hue = (params.bgHue + (isLight ? -60 : 60) + 360) % 360;
   const base06 = isLight
-    ? hslToRgb(base06Hue, params.bgSat, 20) // Dark surface for light themes
-    : hslToRgb(base06Hue, params.bgSat, 80); // Light surface for dark themes
+    ? hslToRgb(base06Hue, params.bgSat, 20)
+    : hslToRgb(base06Hue, params.bgSat, 80);
 
-  // base07: Compatible light accent - use a warmer/cooler variation
   const base07Hue = (params.bgHue + (isLight ? 60 : -60) + 360) % 360;
   const base07 = isLight
-    ? hslToRgb(base07Hue, params.bgSat, 20) // Very dark for light themes
-    : hslToRgb(base07Hue, params.bgSat, 80); // Very light for dark themes
+    ? hslToRgb(base07Hue, params.bgSat, 20)
+    : hslToRgb(base07Hue, params.bgSat, 80);
 
-  // Generate accent colors with individual adjustments
   const accentColorKeys: AccentColorKey[] = [
     'base08',
     'base09',
@@ -250,15 +240,17 @@ export const generateColors = (params: ThemeParams, standardOffsets?: number[]):
     'base0F',
   ];
 
-  const accents = accentColorKeys.map((colorKey) => {
+  const accents = accentColorKeys.map((colorKey, index) => {
     const finalHue = getFinalAccentHue(params, colorKey, offsets);
+    console.log(
+      `COLOR_GEN: ${colorKey} -> finalHue: ${finalHue}° (accentHue: ${params.accentHue}° + offset: ${offsets[index]}° + adjustment: ${params.colorAdjustments?.[colorKey]?.hueOffset ?? 0}°)`
+    );
     return adjustedHslToRgb(finalHue, params.accentSat, params.accentLight);
   });
 
-  // Generate muted colors using the same final hues
   const mutedSat = Math.max(25, params.accentSat * 0.7);
   const mutedLight = getMutedLightness(params.accentLight);
-  const muted = accentColorKeys.map((colorKey) => {
+  const muted = accentColorKeys.map((colorKey, index) => {
     const finalHue = getFinalAccentHue(params, colorKey, offsets);
     return adjustedHslToRgb(finalHue, mutedSat, mutedLight);
   });
@@ -272,21 +264,21 @@ export const generateColors = (params: ThemeParams, standardOffsets?: number[]):
     base05,
     base06,
     base07,
-    base08: accents[0], // Red
-    base09: accents[1], // Orange
-    base0A: accents[2], // Yellow
-    base0B: accents[3], // Green
-    base0C: accents[4], // Cyan
-    base0D: accents[5], // Blue
-    base0E: accents[6], // Purple
-    base0F: accents[7], // Pink
-    base10: muted[0], // Muted Red
-    base11: muted[1], // Muted Orange
-    base12: muted[2], // Muted Yellow
-    base13: muted[3], // Muted Green
-    base14: muted[4], // Muted Cyan
-    base15: muted[5], // Muted Blue
-    base16: muted[6], // Muted Purple
-    base17: muted[7], // Muted Pink
+    base08: accents[0],
+    base09: accents[1],
+    base0A: accents[2],
+    base0B: accents[3],
+    base0C: accents[4],
+    base0D: accents[5],
+    base0E: accents[6],
+    base0F: accents[7],
+    base10: muted[0],
+    base11: muted[1],
+    base12: muted[2],
+    base13: muted[3],
+    base14: muted[4],
+    base15: muted[5],
+    base16: muted[6],
+    base17: muted[7],
   };
 };
