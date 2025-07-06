@@ -25,7 +25,6 @@ const Slider: React.FC<SliderProps> = ({
   previewColor,
   previewLabel,
 }) => {
-  // Handle undefined or null values by providing defaults
   const safeValue = value ?? min ?? 0;
   const [inputValue, setInputValue] = useState<string>(safeValue.toString());
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
@@ -59,8 +58,27 @@ const Slider: React.FC<SliderProps> = ({
     onChange(parseInt(e.target.value));
   };
 
+  const handleNumberInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Handle up/down arrow keys for single increments
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const newValue = Math.min(max, safeValue + 1);
+      onChange(newValue);
+      setInputValue(newValue.toString());
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const newValue = Math.max(min, safeValue - 1);
+      onChange(newValue);
+      setInputValue(newValue.toString());
+    }
+  };
+
   const getUnit = () => {
     return type === 'hue' ? '°' : '%';
+  };
+
+  const getStep = () => {
+    return type === 'hue' ? 1 : 1;
   };
 
   return (
@@ -72,8 +90,10 @@ const Slider: React.FC<SliderProps> = ({
             type="number"
             min={min}
             max={max}
+            step={getStep()}
             value={inputValue}
             onChange={handleInputChange}
+            onKeyDown={handleNumberInputKeyDown}
             onFocus={() => setIsInputFocused(true)}
             onBlur={handleInputBlur}
             className="bg-black bg-opacity-10 border border-white border-opacity-20 text-white px-2 py-1 rounded text-xs w-16 text-right outline-none"
@@ -86,6 +106,7 @@ const Slider: React.FC<SliderProps> = ({
           type="range"
           min={min}
           max={max}
+          step={getStep()}
           value={safeValue}
           onChange={handleRangeChange}
           className="w-full h-4 rounded cursor-pointer outline-none appearance-none"

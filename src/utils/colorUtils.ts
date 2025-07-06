@@ -1,5 +1,79 @@
-import type { ThemeParams, Base24Colors, AccentColorKey } from '../types/index.ts';
+import type { ThemeParams, Base24Colors, AccentColorKey, ThemeKey } from '../types/index.ts';
 import { lab, formatHex } from 'culori';
+import { themeLoader } from './themeLoader.ts';
+
+export const STANDARD_BASE16_OFFSETS = [0, 30, 60, 150, 180, 210, 270, 330];
+
+const ACCENT_COLOR_INDEX_MAP: Record<AccentColorKey, number> = {
+  base08: 0, // Red
+  base09: 1, // Orange
+  base0A: 2, // Yellow
+  base0B: 3, // Green
+  base0C: 4, // Cyan
+  base0D: 5, // Blue
+  base0E: 6, // Purple
+  base0F: 7, // Pink
+};
+
+export function getStandardOffset(colorKey: AccentColorKey): number {
+  const index = ACCENT_COLOR_INDEX_MAP[colorKey];
+  return STANDARD_BASE16_OFFSETS[index] ?? 0;
+}
+
+export function getThemeOffsets(themeKey: ThemeKey): number[] {
+  const themeDefinition = themeLoader.getThemeDefinition(themeKey);
+
+  if (!themeDefinition?.accentOffsets) {
+    return [0, 0, 0, 0, 0, 0, 0, 0];
+  }
+
+  const offsets = themeDefinition.accentOffsets;
+  return [
+    offsets.red?.hue ?? 0,
+    offsets.orange?.hue ?? 0,
+    offsets.yellow?.hue ?? 0,
+    offsets.green?.hue ?? 0,
+    offsets.cyan?.hue ?? 0,
+    offsets.blue?.hue ?? 0,
+    offsets.purple?.hue ?? 0,
+    offsets.pink?.hue ?? 0,
+  ];
+}
+
+export function getThemeOffset(themeKey: ThemeKey, colorKey: AccentColorKey): number {
+  const themeOffsets = getThemeOffsets(themeKey);
+  const index = ACCENT_COLOR_INDEX_MAP[colorKey];
+  return themeOffsets[index] ?? 0;
+}
+
+export function getCombinedOffsets(themeKey: ThemeKey): number[] {
+  const themeOffsets = getThemeOffsets(themeKey);
+  return STANDARD_BASE16_OFFSETS.map(
+    (standardOffset, index) => standardOffset + themeOffsets[index]
+  );
+}
+
+export function getFinalHue(
+  params: ThemeParams,
+  colorKey: AccentColorKey,
+  themeKey: ThemeKey
+): number {
+  const baseHue = params.accentHue || 0;
+  const standardOffset = getStandardOffset(colorKey);
+  const themeOffset = getThemeOffset(themeKey, colorKey);
+  const userAdjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+
+  let finalHue = baseHue + standardOffset + themeOffset + userAdjustment;
+
+  while (finalHue < 0) finalHue += 360;
+  while (finalHue >= 360) finalHue -= 360;
+
+  return Math.round(finalHue);
+}
+
+export function getUserAdjustment(params: ThemeParams, colorKey: AccentColorKey): number {
+  return params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+}
 
 export const hslToRgb = (h: number, s: number, l: number): string => {
   const hNorm = h / 360;
@@ -143,57 +217,7 @@ const getMutedLightness = (accentLightness: number): number => {
   return Math.min(maxMutedLightness, accentLightness + difference);
 };
 
-export const getCalculatedAccentHue = (
-  params: ThemeParams,
-  colorIndex: number,
-  standardOffsets: number[]
-): number => {
-  const accentOffsets = [
-    params.redOffset ?? standardOffsets[0],
-    params.orangeOffset ?? standardOffsets[1],
-    params.yellowOffset ?? standardOffsets[2],
-    params.greenOffset ?? standardOffsets[3],
-    params.cyanOffset ?? standardOffsets[4],
-    params.blueOffset ?? standardOffsets[5],
-    params.purpleOffset ?? standardOffsets[6],
-    params.pinkOffset ?? standardOffsets[7],
-  ];
-
-  let hue = params.accentHue + accentOffsets[colorIndex];
-  while (hue < 0) hue += 360;
-  while (hue >= 360) hue -= 360;
-  return hue;
-};
-
-export const getFinalAccentHue = (
-  params: ThemeParams,
-  colorKey: AccentColorKey,
-  preCalculatedOffsets: number[]
-): number => {
-  const colorIndex = [
-    'base08',
-    'base09',
-    'base0A',
-    'base0B',
-    'base0C',
-    'base0D',
-    'base0E',
-    'base0F',
-  ].indexOf(colorKey);
-
-  // Use the pre-calculated offset directly (it already includes standard + theme offset)
-  const basePosition = preCalculatedOffsets[colorIndex];
-  const userAdjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
-
-  let finalHue = params.accentHue + basePosition + userAdjustment;
-  while (finalHue < 0) finalHue += 360;
-  while (finalHue >= 360) finalHue -= 360;
-  return finalHue;
-};
-
-export const generateColors = (params: ThemeParams, standardOffsets?: number[]): Base24Colors => {
-  const offsets = standardOffsets || [0, 30, 60, 150, 180, 210, 270, 330];
-
+export const generateColors = (params: ThemeParams, themeKey: ThemeKey): Base24Colors => {
   const isLight = params.bgLight > 50;
 
   const base00 = hslToRgb(params.bgHue, params.bgSat, params.bgLight);
@@ -240,18 +264,15 @@ export const generateColors = (params: ThemeParams, standardOffsets?: number[]):
     'base0F',
   ];
 
-  const accents = accentColorKeys.map((colorKey, index) => {
-    const finalHue = getFinalAccentHue(params, colorKey, offsets);
-    console.log(
-      `COLOR_GEN: ${colorKey} -> finalHue: ${finalHue}° (accentHue: ${params.accentHue}° + offset: ${offsets[index]}° + adjustment: ${params.colorAdjustments?.[colorKey]?.hueOffset ?? 0}°)`
-    );
+  const accents = accentColorKeys.map((colorKey) => {
+    const finalHue = getFinalHue(params, colorKey, themeKey);
     return adjustedHslToRgb(finalHue, params.accentSat, params.accentLight);
   });
 
   const mutedSat = Math.max(25, params.accentSat * 0.7);
   const mutedLight = getMutedLightness(params.accentLight);
-  const muted = accentColorKeys.map((colorKey, index) => {
-    const finalHue = getFinalAccentHue(params, colorKey, offsets);
+  const muted = accentColorKeys.map((colorKey) => {
+    const finalHue = getFinalHue(params, colorKey, themeKey);
     return adjustedHslToRgb(finalHue, mutedSat, mutedLight);
   });
 

@@ -81,6 +81,18 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
     onColorAdjust(selectedColorKey, newValue);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const newValue = Math.min(180, currentOffset + 1);
+      onColorAdjust(selectedColorKey, newValue);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const newValue = Math.max(-179, currentOffset - 1);
+      onColorAdjust(selectedColorKey, newValue);
+    }
+  };
+
   const colorName = accentColors.find((c) => c.key === selectedColorKey)?.name || '';
 
   return (
@@ -118,8 +130,10 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
               type="number"
               min="-179"
               max="180"
+              step="1"
               value={inputValue}
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
               onFocus={() => setIsInputFocused(true)}
               onBlur={handleInputBlur}
               className="bg-black bg-opacity-10 border border-white border-opacity-20 text-white px-2 py-1 rounded text-xs w-16 text-right outline-none"
@@ -140,6 +154,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
             type="range"
             min="-179"
             max="180"
+            step="1"
             value={currentOffset}
             onChange={handleRangeChange}
             className="w-full h-4 rounded cursor-pointer outline-none appearance-none"
@@ -413,7 +428,7 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
           getCalculatedHue={getCalculatedHue}
           getThemeOffset={getThemeOffset}
           onColorSelect={onColorSelect}
-          onColorAdjust={onColorAdjust}
+          onColorAdjust={handleColorAdjust}
           onResetToDefault={onResetToDefault}
         />
       )}

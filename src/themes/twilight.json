@@ -6,14 +6,30 @@
   "bgSat": 40,
   "bgLight": 12,
   "accentOffsets": {
-    "red": { "hue": 0 },
-    "orange": { "hue": 0 },
-    "yellow": { "hue": -15 },
-    "green": { "hue": -10 },
-    "cyan": { "hue": -10 },
-    "blue": { "hue": 0 },
-    "purple": { "hue": 0 },
-    "pink": { "hue": 0 }
+    "red": {
+      "hue": 0
+    },
+    "orange": {
+      "hue": -5
+    },
+    "yellow": {
+      "hue": -10
+    },
+    "green": {
+      "hue": -10
+    },
+    "cyan": {
+      "hue": -10
+    },
+    "blue": {
+      "hue": 0
+    },
+    "purple": {
+      "hue": 0
+    },
+    "pink": {
+      "hue": 0
+    }
   },
   "flavors": {
     "muted": {
@@ -30,8 +46,8 @@
     },
     "bold": {
       "accentHue": 0,
-      "accentSat": 95,
-      "accentLight": 55,
+      "accentSat": 100,
+      "accentLight": 50,
       "commentLight": 60
     }
   }

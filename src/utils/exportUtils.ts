@@ -1,5 +1,18 @@
-import type { Base24Colors, FlavorKey, ThemeParams, AccentColorKey } from '../types/index.ts';
+import type {
+  Base24Colors,
+  FlavorKey,
+  ThemeParams,
+  AccentColorKey,
+  ThemeKey,
+  BaseTheme,
+} from '../types/index.ts';
 import { Base24 } from '../classes/Base24.ts';
+import {
+  getFinalHue,
+  generateColors,
+  getThemeOffset,
+  getUserAdjustment,
+} from '../utils/colorUtils.ts';
 
 export const createNvimTheme = (
   colors: Base24Colors,
@@ -107,39 +120,23 @@ ${Object.entries(colors)
 }`;
 };
 
-const getFinalHueForColor = (
+export const createThemeDefinitionJson = (
   params: ThemeParams,
-  colorKey: AccentColorKey,
-  standardOffsets: number[] = Base24.STANDARD_OFFSETS
-): number => {
-  const baseHue = params.accentHue || 0;
-  const colorIndex = Base24.getAccentColorIndex(colorKey);
-  const standardOffset = standardOffsets[colorIndex] || 0;
-  const customOffset = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
-
-  let finalHue = baseHue + standardOffset + customOffset;
-  while (finalHue < 0) finalHue += 360;
-  while (finalHue >= 360) finalHue -= 360;
-
-  return Math.round(finalHue);
-};
-
-export const createThemeJson = (
-  params: ThemeParams,
+  themeKey: ThemeKey,
   themeName: string,
   themeTagline: string,
   themeInspirations: string,
   currentFlavor: FlavorKey
 ): string => {
   const accentColors = {
-    red: { hue: getFinalHueForColor(params, 'base08') },
-    orange: { hue: getFinalHueForColor(params, 'base09') },
-    yellow: { hue: getFinalHueForColor(params, 'base0A') },
-    green: { hue: getFinalHueForColor(params, 'base0B') },
-    cyan: { hue: getFinalHueForColor(params, 'base0C') },
-    blue: { hue: getFinalHueForColor(params, 'base0D') },
-    purple: { hue: getFinalHueForColor(params, 'base0E') },
-    pink: { hue: getFinalHueForColor(params, 'base0F') },
+    red: { hue: getFinalHue(params, 'base08', themeKey) },
+    orange: { hue: getFinalHue(params, 'base09', themeKey) },
+    yellow: { hue: getFinalHue(params, 'base0A', themeKey) },
+    green: { hue: getFinalHue(params, 'base0B', themeKey) },
+    cyan: { hue: getFinalHue(params, 'base0C', themeKey) },
+    blue: { hue: getFinalHue(params, 'base0D', themeKey) },
+    purple: { hue: getFinalHue(params, 'base0E', themeKey) },
+    pink: { hue: getFinalHue(params, 'base0F', themeKey) },
   };
 
   const flavors = {
@@ -176,3 +173,145 @@ export const createThemeJson = (
 
   return JSON.stringify(themeDefinition, null, 2);
 };
+
+export const createThemeParamsJson = (
+  params: ThemeParams,
+  themeKey: ThemeKey,
+  currentFlavor: FlavorKey,
+  themeInfo: BaseTheme,
+  flavorParams: any
+): string => {
+  const getFinalOffsetForColor = (colorKey: AccentColorKey): number => {
+    const themeOffset = getThemeOffset(themeKey, colorKey);
+    const userAdjustment = getUserAdjustment(params, colorKey);
+    return themeOffset + userAdjustment;
+  };
+
+  const accentOffsets = {
+    red: { hue: getFinalOffsetForColor('base08') },
+    orange: { hue: getFinalOffsetForColor('base09') },
+    yellow: { hue: getFinalOffsetForColor('base0A') },
+    green: { hue: getFinalOffsetForColor('base0B') },
+    cyan: { hue: getFinalOffsetForColor('base0C') },
+    blue: { hue: getFinalOffsetForColor('base0D') },
+    purple: { hue: getFinalOffsetForColor('base0E') },
+    pink: { hue: getFinalOffsetForColor('base0F') },
+  };
+
+  const flavors = {
+    muted:
+      currentFlavor === 'muted'
+        ? {
+            accentHue: params.accentHue,
+            accentSat: params.accentSat,
+            accentLight: params.accentLight,
+            commentLight: params.commentLight,
+          }
+        : flavorParams.muted || {
+            accentHue: 0,
+            accentSat: 85,
+            accentLight: 75,
+            commentLight: 55,
+          },
+    balanced:
+      currentFlavor === 'balanced'
+        ? {
+            accentHue: params.accentHue,
+            accentSat: params.accentSat,
+            accentLight: params.accentLight,
+            commentLight: params.commentLight,
+          }
+        : flavorParams.balanced || {
+            accentHue: 0,
+            accentSat: 95,
+            accentLight: 60,
+            commentLight: 55,
+          },
+    bold:
+      currentFlavor === 'bold'
+        ? {
+            accentHue: params.accentHue,
+            accentSat: params.accentSat,
+            accentLight: params.accentLight,
+            commentLight: params.commentLight,
+          }
+        : flavorParams.bold || {
+            accentHue: 0,
+            accentSat: 100,
+            accentLight: 50,
+            commentLight: 60,
+          },
+  };
+
+  const themeDefinition = {
+    name: themeInfo.name,
+    tagline: themeInfo.tagline,
+    inspirations: themeInfo.inspirations,
+    bgHue: params.bgHue,
+    bgSat: params.bgSat,
+    bgLight: params.bgLight,
+    accentOffsets,
+    flavors,
+  };
+
+  return JSON.stringify(themeDefinition, null, 2);
+};
+
+export const exportNeovimTheme = (
+  params: ThemeParams,
+  themeKey: ThemeKey,
+  themeName: string,
+  flavor: FlavorKey
+): string => {
+  const colors = generateColors(params, themeKey);
+  return createNvimTheme(colors, themeName, flavor);
+};
+
+export const exportBase24Theme = (
+  params: ThemeParams,
+  themeKey: ThemeKey,
+  themeName: string
+): string => {
+  const colors = generateColors(params, themeKey);
+  return createBase24Json(colors, themeName);
+};
+
+export const exportStylixTheme = (
+  params: ThemeParams,
+  themeKey: ThemeKey,
+  themeName: string,
+  flavor: FlavorKey
+): string => {
+  const colors = generateColors(params, themeKey);
+  return createStylixTheme(colors, themeName, flavor);
+};
+
+export const exportThemeDefinition = (
+  params: ThemeParams,
+  themeKey: ThemeKey,
+  themeName: string,
+  themeTagline: string,
+  themeInspirations: string,
+  currentFlavor: FlavorKey
+): string => {
+  return createThemeDefinitionJson(
+    params,
+    themeKey,
+    themeName,
+    themeTagline,
+    themeInspirations,
+    currentFlavor
+  );
+};
+
+export const exportThemeParams = (
+  params: ThemeParams,
+  themeKey: ThemeKey,
+  currentFlavor: FlavorKey,
+  themeInfo: BaseTheme,
+  flavorParams: any
+): string => {
+  return createThemeParamsJson(params, themeKey, currentFlavor, themeInfo, flavorParams);
+};
+
+export const createThemeJson = createThemeDefinitionJson;

@@ -1,4 +1,5 @@
 import type { Base24Colors, AccentColorKey } from '../types/index.ts';
+import { getStandardOffset } from '../utils/colorUtils.ts';
 
 export interface ColorGroup {
   key: string;
@@ -13,8 +14,6 @@ export interface ColorSection {
 }
 
 export class Base24 {
-  static readonly STANDARD_OFFSETS = [0, 30, 60, 150, 180, 210, 270, 330];
-
   static readonly BASE_COLORS: ColorGroup[] = [
     { key: 'base00', name: 'Background', description: 'Primary background color' },
     { key: 'base01', name: 'Alt Background', description: 'Secondary background for panels' },
@@ -86,8 +85,7 @@ export class Base24 {
   }
 
   static getStandardOffset(colorKey: AccentColorKey): number {
-    const index = Base24.getAccentColorIndex(colorKey);
-    return Base24.STANDARD_OFFSETS[index] || 0;
+    return getStandardOffset(colorKey);
   }
 
   static isAccentColor(colorKey: string): colorKey is AccentColorKey {

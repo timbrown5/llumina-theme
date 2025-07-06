@@ -1,8 +1,6 @@
 import { generateColors } from '../utils/colorUtils.ts';
-import { createNvimTheme, createBase24Json, createStylixTheme } from '../utils/exportUtils.ts';
 import type { ThemeKey, FlavorKey, ThemeParams, Base24Colors, BaseTheme } from '../types/index.ts';
 
-// Import theme JSON files
 import midnightTheme from '../themes/midnight.json';
 import twilightTheme from '../themes/twilight.json';
 import dawnTheme from '../themes/dawn.json';
@@ -17,7 +15,6 @@ export interface ThemeFlavorData {
 
 export interface AccentOffsetDefinition {
   hue: number;
-  // Future extensions:
   saturation?: number;
   lightness?: number;
 }
@@ -168,32 +165,7 @@ export class Theme {
   }
 
   generateColors(params: ThemeParams): Base24Colors {
-    const offsetsArray = [
-      this.definition.accentOffsets.red.hue,
-      this.definition.accentOffsets.orange.hue,
-      this.definition.accentOffsets.yellow.hue,
-      this.definition.accentOffsets.green.hue,
-      this.definition.accentOffsets.cyan.hue,
-      this.definition.accentOffsets.blue.hue,
-      this.definition.accentOffsets.purple.hue,
-      this.definition.accentOffsets.pink.hue,
-    ];
-    return generateColors(params, offsetsArray);
-  }
-
-  exportToNeovim(params: ThemeParams, flavorKey: FlavorKey): string {
-    const colors = this.generateColors(params);
-    return createNvimTheme(colors, this.getName(), flavorKey);
-  }
-
-  exportToBase24(params: ThemeParams): string {
-    const colors = this.generateColors(params);
-    return createBase24Json(colors, this.getName());
-  }
-
-  exportToStylix(params: ThemeParams, flavorKey: FlavorKey): string {
-    const colors = this.generateColors(params);
-    return createStylixTheme(colors, this.getName(), flavorKey);
+    return generateColors(params, this.key);
   }
 
   isLightTheme(): boolean {
@@ -225,11 +197,6 @@ export class Theme {
       accentOffsets: { ...this.definition.accentOffsets },
       flavors: { ...this.definition.flavors },
     };
-  }
-
-  exportAsJson(customParams?: Partial<ThemeParams>): string {
-    const definition = this.toThemeDefinition(customParams);
-    return JSON.stringify(definition, null, 2);
   }
 
   toBaseTheme(): BaseTheme {
