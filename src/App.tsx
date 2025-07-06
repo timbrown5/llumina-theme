@@ -356,6 +356,7 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
                   gradientColors={sliderProps.gradientColors}
                   previewColor={sliderProps.previewColor}
                   previewLabel={sliderProps.previewLabel}
+                  colors={pageColors}
                   onChange={(v) => updateParam(config.key, v)}
                 />
               );
@@ -379,6 +380,7 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
                   gradientColors={sliderProps.gradientColors}
                   previewColor={sliderProps.previewColor}
                   previewLabel={sliderProps.previewLabel}
+                  colors={pageColors}
                   onChange={(v) => updateParam(config.key, v)}
                 />
               );
@@ -402,6 +404,7 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
                   gradientColors={sliderProps.gradientColors}
                   previewColor={sliderProps.previewColor}
                   previewLabel={sliderProps.previewLabel}
+                  colors={pageColors}
                   onChange={(v) => updateParam(config.key, v)}
                 />
               );

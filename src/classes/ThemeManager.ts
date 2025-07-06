@@ -87,31 +87,9 @@ export class ThemeManager {
   }
 
   private initializeThemeColorAdjustments(themeKey: ThemeKey) {
-    const colorKeys: AccentColorKey[] = [
-      'base08',
-      'base09',
-      'base0A',
-      'base0B',
-      'base0C',
-      'base0D',
-      'base0E',
-      'base0F',
-    ];
-
-    colorKeys.forEach((colorKey) => {
-      const themeOffset = getThemeOffset(themeKey, colorKey);
-      const standardOffset = getStandardOffset(colorKey);
-      const themeIntendedAdjustment = themeOffset - standardOffset;
-
-      if (themeIntendedAdjustment !== 0) {
-        if (!this.baseThemeParams.colorAdjustments) {
-          this.baseThemeParams.colorAdjustments = {};
-        }
-        this.baseThemeParams.colorAdjustments[colorKey] = {
-          hueOffset: themeIntendedAdjustment,
-        };
-      }
-    });
+    // Don't initialize any color adjustments - theme offsets are handled in colorUtils
+    // Only user-made adjustments should be stored in colorAdjustments
+    // Theme offsets are applied automatically in the color generation process
   }
 
   switchTheme(themeKey: ThemeKey) {

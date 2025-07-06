@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createGradientBg } from '../utils/colorUtils.ts';
-import type { SliderType } from '../types/index.ts';
+import type { SliderType, Base24Colors } from '../types/index.ts';
 
 interface SliderProps {
   label: string;
@@ -12,6 +12,7 @@ interface SliderProps {
   gradientColors: string[];
   previewColor?: string;
   previewLabel?: string;
+  colors: Base24Colors;
 }
 
 const Slider: React.FC<SliderProps> = ({
@@ -24,6 +25,7 @@ const Slider: React.FC<SliderProps> = ({
   gradientColors,
   previewColor,
   previewLabel,
+  colors,
 }) => {
   const safeValue = value ?? min ?? 0;
   const [inputValue, setInputValue] = useState<string>(safeValue.toString());
@@ -84,7 +86,9 @@ const Slider: React.FC<SliderProps> = ({
   return (
     <div className="my-3">
       <div className="flex justify-between items-center mb-1">
-        <span className="text-sm">{label}</span>
+        <span className="text-sm" style={{ color: colors.base05 }}>
+          {label}
+        </span>
         <div className="flex items-center gap-1">
           <input
             type="number"
@@ -96,9 +100,16 @@ const Slider: React.FC<SliderProps> = ({
             onKeyDown={handleNumberInputKeyDown}
             onFocus={() => setIsInputFocused(true)}
             onBlur={handleInputBlur}
-            className="bg-black bg-opacity-10 border border-white border-opacity-20 text-white px-2 py-1 rounded text-xs w-16 text-right outline-none"
+            style={{
+              background: colors.base01,
+              border: `1px solid ${colors.base02}`,
+              color: colors.base05,
+            }}
+            className="px-2 py-1 rounded text-xs w-16 text-right outline-none focus:ring-1"
           />
-          <span className="text-xs opacity-70 min-w-4">{getUnit()}</span>
+          <span className="text-xs min-w-4" style={{ color: colors.base04 }}>
+            {getUnit()}
+          </span>
         </div>
       </div>
       <div className="relative">
@@ -145,7 +156,11 @@ const Slider: React.FC<SliderProps> = ({
             className="w-4 h-4 rounded border border-white border-opacity-30"
             style={{ backgroundColor: previewColor }}
           />
-          {previewLabel && <span className="text-xs opacity-70">{previewLabel}</span>}
+          {previewLabel && (
+            <span className="text-xs" style={{ color: colors.base04 }}>
+              {previewLabel}
+            </span>
+          )}
         </div>
       )}
     </div>
