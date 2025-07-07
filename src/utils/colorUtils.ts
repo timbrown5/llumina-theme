@@ -1,9 +1,20 @@
+/**
+ * Core color generation engine for Lumina Theme Generator.
+ * Converts theme parameters into complete Base24 color schemes using OKHSL color space.
+ */
+
 import type { ThemeParams, Base24Colors, AccentColorKey, ThemeKey } from '../types/index.ts';
 import { lab, formatHex } from 'culori';
 import { themeLoader } from './themeLoader.ts';
 
+/**
+ * Standard Base16 hue offsets in degrees for color wheel distribution.
+ */
 export const STANDARD_BASE16_OFFSETS = [0, 30, 60, 150, 180, 210, 270, 330];
 
+/**
+ * Maps accent color keys to their index in the standard offset array.
+ */
 const ACCENT_COLOR_INDEX_MAP: Record<AccentColorKey, number> = {
   base08: 0, // Red
   base09: 1, // Orange
@@ -15,11 +26,21 @@ const ACCENT_COLOR_INDEX_MAP: Record<AccentColorKey, number> = {
   base0F: 7, // Pink
 };
 
+/**
+ * Gets the standard Base16 hue offset for an accent color.
+ * @param colorKey - The accent color to get offset for
+ * @returns Hue offset in degrees (0-330)
+ */
 export function getStandardOffset(colorKey: AccentColorKey): number {
   const index = ACCENT_COLOR_INDEX_MAP[colorKey];
   return STANDARD_BASE16_OFFSETS[index] ?? 0;
 }
 
+/**
+ * Gets all theme-specific offsets for a given theme.
+ * @param themeKey - The theme to get offsets for
+ * @returns Array of 8 hue offsets for [red, orange, yellow, green, cyan, blue, purple, pink]
+ */
 export function getThemeOffsets(themeKey: ThemeKey): number[] {
   const themeDefinition = themeLoader.getThemeDefinition(themeKey);
 
@@ -40,12 +61,23 @@ export function getThemeOffsets(themeKey: ThemeKey): number[] {
   ];
 }
 
+/**
+ * Gets theme-specific offset for a single accent color.
+ * @param themeKey - The theme to query
+ * @param colorKey - The accent color to get offset for
+ * @returns Theme-specific hue offset in degrees
+ */
 export function getThemeOffset(themeKey: ThemeKey, colorKey: AccentColorKey): number {
   const themeOffsets = getThemeOffsets(themeKey);
   const index = ACCENT_COLOR_INDEX_MAP[colorKey];
   return themeOffsets[index] ?? 0;
 }
 
+/**
+ * Combines standard Base16 offsets with theme-specific offsets.
+ * @param themeKey - The theme to combine offsets for
+ * @returns Array of combined offsets for each accent color
+ */
 export function getCombinedOffsets(themeKey: ThemeKey): number[] {
   const themeOffsets = getThemeOffsets(themeKey);
   return STANDARD_BASE16_OFFSETS.map(
@@ -53,6 +85,14 @@ export function getCombinedOffsets(themeKey: ThemeKey): number[] {
   );
 }
 
+/**
+ * Calculates final hue combining all adjustments.
+ * Formula: Base Accent Hue + Standard Offset + Theme Offset + User Adjustment
+ * @param params - Theme parameters including user adjustments
+ * @param colorKey - The accent color to calculate
+ * @param themeKey - The active theme
+ * @returns Final hue normalized to 0-360 range
+ */
 export function getFinalHue(
   params: ThemeParams,
   colorKey: AccentColorKey,
@@ -71,10 +111,23 @@ export function getFinalHue(
   return Math.round(finalHue);
 }
 
+/**
+ * Extracts user's hue adjustment for a specific accent color.
+ * @param params - Theme parameters containing user adjustments
+ * @param colorKey - The accent color to query
+ * @returns User adjustment in degrees (default 0)
+ */
 export function getUserAdjustment(params: ThemeParams, colorKey: AccentColorKey): number {
   return params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
 }
 
+/**
+ * Converts HSL values to RGB hex string.
+ * @param h - Hue (0-360)
+ * @param s - Saturation (0-100)
+ * @param l - Lightness (0-100)
+ * @returns RGB hex string
+ */
 export const hslToRgb = (h: number, s: number, l: number): string => {
   const hNorm = h / 360;
   const sNorm = s / 100;
@@ -122,6 +175,14 @@ export const hslToRgb = (h: number, s: number, l: number): string => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
+/**
+ * Applies perceptual lightness adjustments using OKHSL color space.
+ * Fixes issues like yellow washout for more uniform color appearance.
+ * @param h - Hue (0-360)
+ * @param s - Saturation (0-100)
+ * @param l - Lightness (0-100)
+ * @returns Perceptually adjusted RGB hex string
+ */
 const adjustColorPerceptually = (h: number, s: number, l: number): string => {
   const basicColor = hslToRgb(h, s, l);
 
@@ -168,13 +229,31 @@ const adjustColorPerceptually = (h: number, s: number, l: number): string => {
   }
 };
 
+/**
+ * Converts HSL to RGB with perceptual adjustments.
+ * Preferred method for generating accent colors.
+ * @param h - Hue (0-360)
+ * @param s - Saturation (0-100)
+ * @param l - Lightness (0-100)
+ * @returns Perceptually uniform RGB hex string
+ */
 export const adjustedHslToRgb = (h: number, s: number, l: number): string => {
   return adjustColorPerceptually(h, s, l);
 };
 
+/**
+ * Creates CSS linear gradient from array of colors.
+ * @param colors - Array of color strings
+ * @returns CSS linear-gradient string
+ */
 export const createGradientBg = (colors: string[]): string =>
   `linear-gradient(90deg, ${colors.join(', ')})`;
 
+/**
+ * Generates hue gradient for visual sliders.
+ * @param steps - Number of color steps
+ * @returns Array of RGB hex strings spanning full hue range
+ */
 export const generateHueGradient = (steps: number = 25): string[] => {
   return Array.from({ length: steps }, (_, i) => {
     const hue = (360 * i) / (steps - 1);
@@ -182,6 +261,14 @@ export const generateHueGradient = (steps: number = 25): string[] => {
   });
 };
 
+/**
+ * Generates accent hue gradient showing adjustment range.
+ * @param baseHue - Starting hue value
+ * @param minAdjustment - Minimum adjustment value
+ * @param maxAdjustment - Maximum adjustment value
+ * @param steps - Number of gradient steps
+ * @returns Array of colors showing adjustment range
+ */
 export const generateAccentHueGradient = (
   baseHue: number,
   minAdjustment: number,
@@ -195,17 +282,33 @@ export const generateAccentHueGradient = (
   });
 };
 
+/**
+ * Generates saturation gradient from gray to full color.
+ * @param hue - Fixed hue value for the gradient
+ * @returns Two-color gradient array
+ */
 export const generateSaturationGradient = (hue: number): string[] => [
   hslToRgb(hue, 0, 50),
   hslToRgb(hue, 100, 50),
 ];
 
+/**
+ * Generates lightness gradient from black to white.
+ * @param hue - Fixed hue value
+ * @param saturation - Fixed saturation value
+ * @returns Three-color gradient array
+ */
 export const generateLightnessGradient = (hue: number, saturation: number): string[] => [
   hslToRgb(hue, saturation, 0),
   hslToRgb(hue, saturation, 50),
   hslToRgb(hue, saturation, 100),
 ];
 
+/**
+ * Calculates appropriate lightness for muted accent colors.
+ * @param accentLightness - Lightness of the main accent color
+ * @returns Recommended lightness for the muted version
+ */
 const getMutedLightness = (accentLightness: number): number => {
   const minDifference = 8;
   const maxDifference = 18;
@@ -217,9 +320,17 @@ const getMutedLightness = (accentLightness: number): number => {
   return Math.min(maxMutedLightness, accentLightness + difference);
 };
 
+/**
+ * Converts theme parameters into complete Base24 color scheme.
+ * Main color generation function that creates all 24 colors from theme params.
+ * @param params - Theme parameters including all user customizations
+ * @param themeKey - Active theme for theme-specific offsets
+ * @returns Complete 24-color Base24 scheme
+ */
 export const generateColors = (params: ThemeParams, themeKey: ThemeKey): Base24Colors => {
   const isLight = params.bgLight > 50;
 
+  // Base colors (00-07)
   const base00 = hslToRgb(params.bgHue, params.bgSat, params.bgLight);
   const base01 = hslToRgb(
     params.bgHue,
@@ -253,6 +364,7 @@ export const generateColors = (params: ThemeParams, themeKey: ThemeKey): Base24C
     ? hslToRgb(base07Hue, params.bgSat, 20)
     : hslToRgb(base07Hue, params.bgSat, 80);
 
+  // Accent colors (08-0F)
   const accentColorKeys: AccentColorKey[] = [
     'base08',
     'base09',
@@ -269,6 +381,7 @@ export const generateColors = (params: ThemeParams, themeKey: ThemeKey): Base24C
     return adjustedHslToRgb(finalHue, params.accentSat, params.accentLight);
   });
 
+  // Muted colors (10-17)
   const mutedSat = Math.max(25, params.accentSat * 0.7);
   const mutedLight = getMutedLightness(params.accentLight);
   const muted = accentColorKeys.map((colorKey) => {

@@ -1,3 +1,13 @@
+/**
+ * Interactive color palette with individual color adjustment capabilities.
+ *
+ * ## Features
+ * - Displays complete Base24 color structure
+ * - Click-to-edit individual accent colors
+ * - Visual hue adjustment sliders
+ * - Reset options for individual colors
+ */
+
 import React, { useState, useEffect } from 'react';
 import type { Base24Colors, AccentColorKey, ThemeParams } from '../types/index.ts';
 import { Base24 } from '../classes/Base24.ts';

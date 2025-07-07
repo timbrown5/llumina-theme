@@ -7,47 +7,47 @@
   "bgLight": 15,
   "accentOffsets": {
     "red": {
-      "hue": 0
+      "hue": -5
     },
     "orange": {
-      "hue": 0
+      "hue": -8
     },
     "yellow": {
-      "hue": 0
+      "hue": -12
     },
     "green": {
-      "hue": -30
+      "hue": -18
     },
     "cyan": {
-      "hue": -30
+      "hue": -22
     },
     "blue": {
-      "hue": -30
+      "hue": -20
     },
     "purple": {
-      "hue": -30
+      "hue": -15
     },
     "pink": {
-      "hue": -15
+      "hue": -8
     }
   },
   "flavors": {
     "muted": {
-      "accentHue": 15,
-      "accentSat": 85,
-      "accentLight": 75,
+      "accentHue": 10,
+      "accentSat": 70,
+      "accentLight": 68,
       "commentLight": 55
     },
     "balanced": {
-      "accentHue": 0,
-      "accentSat": 95,
-      "accentLight": 60,
+      "accentHue": 5,
+      "accentSat": 80,
+      "accentLight": 62,
       "commentLight": 55
     },
     "bold": {
       "accentHue": 0,
-      "accentSat": 100,
-      "accentLight": 50,
+      "accentSat": 90,
+      "accentLight": 55,
       "commentLight": 60
     }
   }

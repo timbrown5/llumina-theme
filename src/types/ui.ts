@@ -1,3 +1,12 @@
+/**
+ * Type definitions for UI components and interactions.
+ *
+ * ## Key Types
+ * - TabKey: Available preview tab identifiers
+ * - SliderConfig: Slider component configuration
+ * - ColorGroup: Color metadata for UI display
+ */
+
 import type { ThemeParams } from './theme.ts';
 
 export type TabKey = 'colors' | 'ui-preview' | 'javascript' | 'python' | 'cpp' | 'terminal';

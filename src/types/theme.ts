@@ -1,3 +1,12 @@
+/**
+ * Type definitions for theme configuration and customization.
+ *
+ * ## Key Types
+ * - ThemeParams: All adjustable theme parameters
+ * - ColorAdjustment: Individual color fine-tuning data
+ * - ThemeDefinition: Complete theme file structure
+ */
+
 import type { AccentColorKey } from './base24.ts';
 
 export type ThemeKey = 'midnight' | 'twilight' | 'dawn' | 'noon';

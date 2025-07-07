@@ -1,3 +1,12 @@
+/**
+ * Main application shell that orchestrates all UI components.
+ *
+ * ## Responsibilities
+ * - Responsive layout with collapsible panels
+ * - State coordination between theme logic and UI components
+ * - Top-level theme and flavor switching
+ */
+
 import React from 'react';
 import { themeLoader } from './utils/themeLoader.ts';
 import { useThemeLogic } from './hooks/useThemeLogic.ts';

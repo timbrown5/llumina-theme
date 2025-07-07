@@ -1,3 +1,12 @@
+/**
+ * Object-oriented wrapper for theme data with convenience methods.
+ *
+ * ## Responsibilities
+ * - Encapsulates theme metadata and flavor data
+ * - Provides convenient access to theme parameters
+ * - Handles default parameter generation
+ */
+
 import { generateColors } from '../utils/colorUtils.ts';
 import type { ThemeKey, FlavorKey, ThemeParams, Base24Colors, BaseTheme } from '../types/index.ts';
 

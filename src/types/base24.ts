@@ -1,3 +1,12 @@
+/**
+ * Type definitions for Base24 color specification.
+ *
+ * ## Key Types
+ * - Base24Colors: Complete 24-color scheme interface
+ * - AccentColorKey: Type-safe accent color references
+ * - Base24Scheme: Standard scheme metadata structure
+ */
+
 export interface Base24Colors {
   base00: string;
   base01: string;

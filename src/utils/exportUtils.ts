@@ -1,3 +1,13 @@
+/**
+ * Converts theme data into various output formats for different applications.
+ *
+ * ## Export Formats
+ * - Neovim: Complete Lua theme file with highlight groups
+ * - Base24: Standard JSON for universal compatibility
+ * - Stylix: Nix configuration for system-wide theming
+ * - Theme Definition: Installable theme file format
+ */
+
 import type {
   Base24Colors,
   FlavorKey,

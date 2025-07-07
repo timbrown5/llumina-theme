@@ -1,3 +1,13 @@
+/**
+ * Simulated UI elements showing theme in interface context.
+ *
+ * ## Preview Elements
+ * - Code editor with tabs and syntax highlighting
+ * - Terminal with command output
+ * - Interface buttons and status indicators
+ * - Notifications and progress bars
+ */
+
 import type { Base24Colors } from '../types/index.ts';
 
 interface UIPreviewProps {

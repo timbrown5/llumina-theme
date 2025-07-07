@@ -1,3 +1,13 @@
+/**
+ * Reusable slider component with visual gradient backgrounds.
+ *
+ * ## Features
+ * - Real-time parameter adjustment
+ * - Visual gradient showing parameter effect
+ * - Keyboard shortcuts for fine adjustment
+ * - Number input for precise values
+ */
+
 import { useState, useEffect } from 'react';
 import { createGradientBg } from '../utils/colorUtils.ts';
 import type { SliderType, Base24Colors } from '../types/index.ts';

@@ -1,4 +1,14 @@
+/**
+ * Real-time syntax highlighting preview using react-syntax-highlighter.
+ *
+ * ## Languages Supported
+ * - JavaScript, Python, C++, Terminal/Bash
+ * - Custom Base24 theme integration
+ * - Realistic code examples for each language
+ */
+
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { Base24Colors, TabKey } from '../types/index.ts';
 

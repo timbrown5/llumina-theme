@@ -1,3 +1,12 @@
+/**
+ * Loads and manages theme definitions from JSON files at build time.
+ *
+ * ## Responsibilities
+ * - Maintains registry of available themes and flavors
+ * - Provides type-safe access to theme configurations
+ * - Handles graceful fallback when themes are missing
+ */
+
 import type { ThemeKey, FlavorKey, BaseTheme } from '../types/index.ts';
 
 // Import all theme JSON files at build time

@@ -1,3 +1,12 @@
+/**
+ * Object-oriented wrapper for Base24 color specification.
+ *
+ * ## Responsibilities
+ * - Defines color groups and their purposes
+ * - Validates Base24 color schemes
+ * - Provides metadata about color usage (syntax highlighting roles)
+ */
+
 import type { Base24Colors, AccentColorKey } from '../types/index.ts';
 import { getStandardOffset } from '../utils/colorUtils.ts';
 
