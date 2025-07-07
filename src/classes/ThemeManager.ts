@@ -1,6 +1,18 @@
 /**
  * Central state manager for theme data, user customizations, and persistence.
- * Handles theme/flavor switching while preserving user work across sessions.
+ *
+ * Acts as the core orchestrator for all theme-related state in the application.
+ * This class manages the complex interactions between base themes, flavor variants,
+ * and user customizations while ensuring data persistence across sessions. It serves
+ * as the single source of truth for theme state and provides a clean API for
+ * theme manipulation.
+ *
+ * Key responsibilities:
+ * - Theme and flavor switching with customization preservation
+ * - Individual color adjustment tracking and management
+ * - State persistence across browser sessions
+ * - Export functionality for multiple output formats
+ * - Graceful fallback handling for missing themes
  */
 
 import { themeLoader } from '../utils/themeLoader.ts';

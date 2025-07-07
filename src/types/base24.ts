@@ -1,10 +1,7 @@
 /**
  * Type definitions for Base24 color specification.
- *
- * ## Key Types
- * - Base24Colors: Complete 24-color scheme interface
- * - AccentColorKey: Type-safe accent color references
- * - Base24Scheme: Standard scheme metadata structure
+ * Provides complete 24-color scheme interface with type-safe accent color references
+ * and standard scheme metadata structure for editor and terminal theming.
  */
 
 export interface Base24Colors {
@@ -34,6 +31,10 @@ export interface Base24Colors {
   base17: string;
 }
 
+/**
+ * Type-safe references to the 8 primary accent colors in Base24.
+ * Used for individual color adjustments and theme customization.
+ */
 export type AccentColorKey =
   | 'base08'
   | 'base09'
@@ -44,6 +45,9 @@ export type AccentColorKey =
   | 'base0E'
   | 'base0F';
 
+/**
+ * References to base UI colors (background, foreground, selection).
+ */
 export type BaseColorKey =
   | 'base00'
   | 'base01'
@@ -54,6 +58,9 @@ export type BaseColorKey =
   | 'base06'
   | 'base07';
 
+/**
+ * References to muted accent color variations.
+ */
 export type MutedColorKey =
   | 'base10'
   | 'base11'
@@ -64,8 +71,14 @@ export type MutedColorKey =
   | 'base16'
   | 'base17';
 
+/**
+ * Union type covering all 24 color keys in the Base24 specification.
+ */
 export type Base24ColorKey = BaseColorKey | AccentColorKey | MutedColorKey;
 
+/**
+ * Standard Base24 scheme metadata structure for export and compatibility.
+ */
 export interface Base24Scheme {
   name: string;
   scheme: 'base24';

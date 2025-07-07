@@ -1,12 +1,18 @@
 /**
  * Object-oriented wrapper for theme data with convenience methods.
  *
- * ## Responsibilities
- * - Encapsulates theme metadata and flavor data
- * - Provides convenient access to theme parameters
- * - Handles default parameter generation
+ * Provides a clean, type-safe interface for working with individual theme
+ * definitions. This class encapsulates theme metadata, flavor variations,
+ * and parameter generation while abstracting away the underlying JSON
+ * structure and data access patterns.
+ *
+ * Services provided:
+ * - Theme metadata access (name, tagline, inspirations)
+ * - Flavor parameter retrieval and validation
+ * - Default parameter generation for theme initialization
+ * - Color generation with theme-specific adjustments
+ * - Theme definition export and serialization
  */
-
 import { generateColors } from '../utils/colorUtils.ts';
 import type { ThemeKey, FlavorKey, ThemeParams, Base24Colors, BaseTheme } from '../types/index.ts';
 

@@ -1,10 +1,17 @@
 /**
  * Main application shell that orchestrates all UI components.
  *
- * ## Responsibilities
- * - Responsive layout with collapsible panels
+ * Serves as the root component that brings together all theme functionality
+ * into a cohesive user interface. This component manages the overall layout,
+ * responsive behavior, and coordination between theme logic and UI components
+ * while providing the main user interaction flows for theme creation.
+ *
+ * Primary responsibilities:
+ * - Responsive layout with collapsible panels for optimal screen usage
  * - State coordination between theme logic and UI components
- * - Top-level theme and flavor switching
+ * - Top-level theme and flavor switching interface
+ * - Export panel integration with clipboard functionality
+ * - Tab navigation for different preview modes
  */
 
 import React from 'react';

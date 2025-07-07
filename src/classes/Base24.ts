@@ -1,10 +1,17 @@
 /**
  * Object-oriented wrapper for Base24 color specification.
  *
- * ## Responsibilities
- * - Defines color groups and their purposes
- * - Validates Base24 color schemes
- * - Provides metadata about color usage (syntax highlighting roles)
+ * Provides structured access to the Base24 color standard with metadata
+ * about color purposes, syntax highlighting roles, and validation capabilities.
+ * This class serves as the authoritative source for Base24 specification
+ * compliance and color organization within the theme system.
+ *
+ * Specifications handled:
+ * - Complete Base24 color group definitions and metadata
+ * - Color purpose documentation for syntax highlighting
+ * - Validation functions for Base24 scheme compliance
+ * - Standard offset calculations for accent color positioning
+ * - Export utilities for Base24 JSON format
  */
 
 import type { Base24Colors, AccentColorKey } from '../types/index.ts';

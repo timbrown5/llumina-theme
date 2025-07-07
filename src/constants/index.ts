@@ -1,3 +1,19 @@
+/**
+ * Legacy constants file with theme access and slider generation functions.
+ *
+ * Maintains backward compatibility while providing utility functions for
+ * color generation and theme access. This module bridges older parts of
+ * the codebase with the newer theme system architecture, ensuring smooth
+ * operation during system transitions.
+ *
+ * Utilities provided:
+ * - Theme and flavor access functions for compatibility
+ * - Visual gradient generation for slider components
+ * - Color group organization and metadata
+ * - Slider configuration definitions
+ * - Legacy parameter mapping functions
+ */
+
 import type { ColorGroup, Tab, SliderConfig, ThemeKey, FlavorKey } from '../types/index.ts';
 import { themeLoader } from '../utils/themeLoader.ts';
 import {

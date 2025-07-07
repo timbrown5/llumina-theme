@@ -1,10 +1,17 @@
 /**
  * Loads and manages theme definitions from JSON files at build time.
  *
- * ## Responsibilities
- * - Maintains registry of available themes and flavors
- * - Provides type-safe access to theme configurations
- * - Handles graceful fallback when themes are missing
+ * Handles the discovery, loading, and management of available themes within
+ * the application. This module provides the foundation for theme availability
+ * and ensures type-safe access to theme configurations while handling graceful
+ * fallbacks when themes are missing or corrupted.
+ *
+ * Core functionality:
+ * - Build-time theme discovery and loading from JSON files
+ * - Type-safe theme registry with validation
+ * - Graceful fallback handling for missing themes
+ * - Theme and flavor metadata access
+ * - Asynchronous loading interface for UI components
  */
 
 import type { ThemeKey, FlavorKey, BaseTheme } from '../types/index.ts';

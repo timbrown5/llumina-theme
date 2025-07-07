@@ -1,11 +1,17 @@
 /**
  * Reusable slider component with visual gradient backgrounds.
  *
- * ## Features
- * - Real-time parameter adjustment
- * - Visual gradient showing parameter effect
- * - Keyboard shortcuts for fine adjustment
- * - Number input for precise values
+ * A specialized input component designed for theme parameter adjustment with
+ * immediate visual feedback. The component combines traditional range inputs
+ * with color-aware gradients to help users understand the impact of their
+ * adjustments in real-time.
+ *
+ * Capabilities include:
+ * - Real-time parameter adjustment with visual gradient backgrounds
+ * - Keyboard shortcuts for fine-grained control
+ * - Number input field for precise value entry
+ * - Dynamic gradient generation based on current theme state
+ * - Support for hue, saturation, and lightness parameter types
  */
 
 import { useState, useEffect } from 'react';

@@ -1,11 +1,16 @@
 /**
  * Converts theme data into various output formats for different applications.
  *
- * ## Export Formats
- * - Neovim: Complete Lua theme file with highlight groups
- * - Base24: Standard JSON for universal compatibility
- * - Stylix: Nix configuration for system-wide theming
- * - Theme Definition: Installable theme file format
+ * This module serves as the export layer for the Lumina theme system, transforming
+ * generated Base24 color schemes into platform-specific formats. It handles the
+ * conversion logic and formatting requirements for each target application while
+ * maintaining compatibility with existing theme ecosystems.
+ *
+ * Export formats supported:
+ * - Neovim Lua themes with complete highlight group definitions
+ * - Base24 JSON for universal editor compatibility
+ * - Stylix Nix configuration for system-wide theming
+ * - Theme definition files for installable theme packages
  */
 
 import type {

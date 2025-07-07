@@ -1,18 +1,29 @@
 /**
  * Real-time syntax highlighting preview using react-syntax-highlighter.
  *
- * ## Languages Supported
- * - JavaScript, Python, C++, Terminal/Bash
- * - Custom Base24 theme integration
- * - Realistic code examples for each language
+ * Provides live code examples in multiple programming languages with syntax
+ * highlighting that updates immediately as theme colors change. This component
+ * serves as a crucial feedback mechanism for developers to see how their
+ * themes will appear in actual coding environments.
+ *
+ * Language support includes:
+ * - JavaScript with modern React patterns and hooks
+ * - Python with type hints and class definitions
+ * - C++ with modern features and smart pointers
+ * - Terminal/Bash with realistic command sequences
+ * - Real-time Base24 theme integration with proper color mapping
  */
 
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { Base24Colors, TabKey } from '../types/index.ts';
 
-// Override theme colors instead of creating entire theme from scratch
+/**
+ * Creates a custom syntax highlighting theme based on Base24 colors.
+ *
+ * @param colors - Base24 color scheme to apply
+ * @returns Syntax highlighter theme object with Base24 color mappings
+ */
 const createBase24Theme = (colors: Base24Colors) => ({
   ...oneDark,
   'code[class*="language-"]': {
@@ -40,6 +51,10 @@ const createBase24Theme = (colors: Base24Colors) => ({
   punctuation: { color: colors.base05 },
 });
 
+/**
+ * Code examples for different programming languages and contexts.
+ * Provides realistic, meaningful code samples that showcase syntax highlighting.
+ */
 const CODE_EXAMPLES: Record<string, string> = {
   javascript: `// React Hook with State Management
 import { useState, useEffect } from 'react'
@@ -142,7 +157,21 @@ interface SyntaxPreviewProps {
   language: TabKey;
 }
 
+/**
+ * Syntax-highlighted code preview component with live theme integration.
+ *
+ * Displays code examples in various programming languages with syntax
+ * highlighting that updates in real-time as the theme changes.
+ *
+ * @param props - Preview configuration
+ * @param props.colors - Base24 color scheme for syntax highlighting
+ * @param props.language - Programming language to display
+ * @returns Syntax-highlighted code block
+ */
 const SyntaxPreview: React.FC<SyntaxPreviewProps> = ({ colors, language }) => {
+  /**
+   * Maps internal language keys to react-syntax-highlighter language identifiers.
+   */
   const languageMap: Record<string, string> = {
     terminal: 'bash',
     cpp: 'cpp',

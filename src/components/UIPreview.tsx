@@ -1,11 +1,17 @@
 /**
  * Simulated UI elements showing theme in interface context.
  *
- * ## Preview Elements
- * - Code editor with tabs and syntax highlighting
- * - Terminal with command output
- * - Interface buttons and status indicators
- * - Notifications and progress bars
+ * Creates a comprehensive preview environment that demonstrates how Base24
+ * colors appear in realistic interface scenarios. This component helps users
+ * evaluate their theme choices by showing practical applications across
+ * various UI patterns and use cases.
+ *
+ * Preview elements include:
+ * - Code editor interface with tabs and syntax highlighting
+ * - Terminal window with command output and status indicators
+ * - Form elements (inputs, checkboxes, buttons) with theme integration
+ * - Status indicators and progress bars in different states
+ * - Notification panels with various severity levels
  */
 
 import type { Base24Colors } from '../types/index.ts';
@@ -14,6 +20,20 @@ interface UIPreviewProps {
   colors: Base24Colors;
 }
 
+/**
+ * Interactive UI preview component demonstrating theme application across interface elements.
+ *
+ * Shows how Base24 colors appear in realistic interface contexts including:
+ * - Code editor with tabs and syntax highlighting
+ * - Terminal with command output and status colors
+ * - Form elements (inputs, checkboxes, buttons)
+ * - Status indicators and progress bars
+ * - Notifications with different severity levels
+ *
+ * @param props - UI preview configuration
+ * @param props.colors - Base24 color scheme to preview
+ * @returns Comprehensive UI mockup with theme applied
+ */
 const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
   return (
     <div
@@ -243,7 +263,6 @@ const UIPreview: React.FC<UIPreviewProps> = ({ colors }) => {
             >
               💖 Pink
             </button>
-            :wq
           </div>
         </div>
 

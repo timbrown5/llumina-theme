@@ -1,3 +1,19 @@
+/**
+ * Color display components for showing organized Base24 color groups.
+ *
+ * Provides specialized components for visualizing color schemes in different
+ * formats to help users understand color relationships and organization.
+ * These components serve as the foundation for color presentation throughout
+ * the theme editor interface.
+ *
+ * Display components:
+ * - ColorList for vertical color lists with names and swatches
+ * - ColorPalette for compact horizontal color grids
+ * - Automatic color organization by Base24 specification
+ * - Interactive color swatches with metadata tooltips
+ * - Responsive layout adaptation for different screen sizes
+ */
+
 import type { Base24Colors, ColorGroup } from '../types/index.ts';
 
 interface ColorListProps {
@@ -6,6 +22,15 @@ interface ColorListProps {
   colorData: ColorGroup[];
 }
 
+/**
+ * Displays a vertical list of colors with names and color swatches.
+ *
+ * @param props - Color list configuration
+ * @param props.title - Section title for the color group
+ * @param props.colors - Complete Base24 color scheme
+ * @param props.colorData - Metadata for colors to display
+ * @returns Formatted color list with swatches and labels
+ */
 export const ColorList: React.FC<ColorListProps> = ({ title, colors, colorData }) => (
   <div>
     <h5 style={{ color: colors.base04 }} className="text-sm text-center mb-2">
@@ -28,6 +53,14 @@ interface ColorPaletteProps {
   colorKeys: string[];
 }
 
+/**
+ * Displays colors in a compact horizontal palette format.
+ *
+ * @param props - Palette configuration
+ * @param props.colors - Complete Base24 color scheme
+ * @param props.colorKeys - Array of color keys to display
+ * @returns Grid of color swatches with Base24 identifiers
+ */
 export const ColorPalette: React.FC<ColorPaletteProps> = ({ colors, colorKeys }) => (
   <div className="flex gap-1 mb-1">
     {colorKeys.map((colorKey) => (

@@ -1,6 +1,17 @@
 /**
  * React hook providing component interface to ThemeManager with singleton pattern.
- * Ensures ThemeManager persists across re-renders and handles UI updates.
+ *
+ * Serves as the primary interface between React components and the theme management
+ * system. This hook ensures that ThemeManager instances persist across component
+ * re-renders while providing a clean, React-friendly API for theme operations.
+ * It handles UI updates and state synchronization automatically.
+ *
+ * Interface features:
+ * - Singleton ThemeManager instance management
+ * - React state synchronization with theme changes
+ * - Keyboard shortcut handling for color editing
+ * - Export function wrappers with clipboard integration
+ * - Automatic UI updates when theme state changes
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';

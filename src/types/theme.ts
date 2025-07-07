@@ -7,11 +7,19 @@
  * - ThemeDefinition: Complete theme file structure
  */
 
-import type { AccentColorKey } from './base24.ts';
-
+/**
+ * Available base theme identifiers in the Lumina system.
+ */
 export type ThemeKey = 'midnight' | 'twilight' | 'dawn' | 'noon';
+
+/**
+ * Available flavor intensity variants for each theme.
+ */
 export type FlavorKey = 'muted' | 'balanced' | 'bold';
 
+/**
+ * Core theme metadata and background color parameters.
+ */
 export interface BaseTheme {
   name: string;
   tagline: string;
@@ -21,10 +29,17 @@ export interface BaseTheme {
   bgLight: number;
 }
 
+/**
+ * Individual color fine-tuning adjustment data.
+ */
 export interface ColorAdjustment {
   hueOffset: number;
 }
 
+/**
+ * Complete set of adjustable theme parameters.
+ * Includes all slider values and individual color adjustments.
+ */
 export interface ThemeParams {
   bgHue: number;
   bgSat: number;
@@ -53,6 +68,9 @@ export interface ThemeParams {
   };
 }
 
+/**
+ * Flavor-specific color intensity and contrast settings.
+ */
 export interface FlavorData {
   accentHue: number;
   accentSat: number;
@@ -60,12 +78,18 @@ export interface FlavorData {
   commentLight: number;
 }
 
+/**
+ * Theme-specific color offset definition for accent colors.
+ */
 export interface AccentOffsetDefinition {
   hue: number;
   saturation?: number;
   lightness?: number;
 }
 
+/**
+ * Complete theme definition file structure for theme installation.
+ */
 export interface ThemeDefinition {
   name: string;
   tagline: string;
