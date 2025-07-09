@@ -122,7 +122,11 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: colors[selectedColorKey] }} />
+          <div
+            className="w-4 h-4 rounded"
+            style={{ backgroundColor: colors[selectedColorKey] }}
+            title={`Current ${colorName.toLowerCase()} color`}
+          />
           <span className="font-medium" style={{ color: colors.base05 }}>
             {colorName} Hue Adjustment
           </span>
@@ -131,6 +135,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
           onClick={() => onColorSelect(null)}
           className="text-xs opacity-70 hover:opacity-100"
           style={{ color: colors.base04 }}
+          title="Close color adjustment panel"
         >
           ✕ Close
         </button>
@@ -139,7 +144,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
       <div className="space-y-3">
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm" style={{ color: colors.base04 }}>
-            Offset from Standard Base16
+            Hue Offset from Standard Base16
           </span>
           <div className="flex items-center gap-1">
             <input
@@ -158,6 +163,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
                 border: `1px solid ${colors.base02}`,
                 color: colors.base05,
               }}
+              title="Enter precise hue offset value (-179 to 180 degrees)"
             />
             <span className="text-xs opacity-70 min-w-4" style={{ color: colors.base04 }}>
               °
@@ -178,6 +184,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
               background: generateOffsetGradient(standardHue),
               WebkitAppearance: 'none',
             }}
+            title="Drag to adjust hue offset. 0 = standard Base16 spacing"
           />
           <style>{`
             input[type="range"]::-webkit-slider-thumb {
@@ -206,11 +213,14 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
         <div className="space-y-1 text-xs" style={{ color: colors.base04 }}>
           <div>
             Standard {colorName.toLowerCase()}: {Math.round(standardHue)}°
-            <span className="opacity-70"> (accent hue + {standardOffset}°)</span>
+            <span className="opacity-70" title="Base accent hue plus standard Base16 offset">
+              {' '}
+              (accent hue + {standardOffset}°)
+            </span>
           </div>
           <div>
             Current {colorName.toLowerCase()}: {Math.round(currentHue)}°
-            <span className="opacity-70">
+            <span className="opacity-70" title="Standard color plus your custom adjustment">
               {' '}
               (standard + {currentOffset > 0 ? '+' : ''}
               {currentOffset}°)
@@ -219,7 +229,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
           {themeOffset !== 0 && (
             <div>
               Theme's intended: {Math.round(themeIntendedHue)}°
-              <span className="opacity-70">
+              <span className="opacity-70" title="Theme designer's intended color for this slot">
                 {' '}
                 (standard + {themeOffset > 0 ? '+' : ''}
                 {themeOffset}°)
@@ -234,9 +244,10 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
             style={{
               backgroundColor: `hsl(${currentHue}, 70%, 60%)`,
             }}
+            title="Preview of current hue at standard saturation and lightness"
           />
           <span className="text-xs" style={{ color: colors.base04 }}>
-            Preview: {Math.round(currentHue)}°
+            Preview: {Math.round(currentHue)}° at 70% saturation
           </span>
         </div>
 
@@ -249,6 +260,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
               border: `1px solid ${colors.base02}`,
               color: colors.base05,
             }}
+            title="Reset to standard Base16 color spacing (no adjustment)"
           >
             Reset to Standard (0°)
           </button>
@@ -261,6 +273,7 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
                 border: `1px solid ${colors.base02}`,
                 color: colors.base05,
               }}
+              title="Reset to theme designer's intended color"
             >
               Reset to Theme ({themeOffset > 0 ? '+' : ''}
               {themeOffset}°)
@@ -269,9 +282,10 @@ const ColorAdjustmentPanel: React.FC<ColorAdjustmentPanelProps> = ({
         </div>
 
         <div className="text-xs opacity-70 text-center" style={{ color: colors.base03 }}>
-          Use ← → arrow keys to fine-tune • ESC to close
+          Use ← → arrow keys for fine-tuning • Press Escape to close
           <br />
-          Slider 0 = Standard Base16 color spacing • Adjustments preserved when accent hue rotates
+          Slider at 0 = Standard Base16 color spacing • Adjustments are preserved when accent hue
+          rotates
         </div>
       </div>
     </div>
@@ -347,7 +361,8 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
   }> = ({ title, colors: rowColors, editable = false }) => (
     <div className="space-y-2">
       <h5 className="text-xs font-medium" style={{ color: colors.base04 }}>
-        {title} {editable && <span className="opacity-70">(Click to edit)</span>}
+        {title}{' '}
+        {editable && <span className="opacity-70">(Click any color to adjust its hue)</span>}
       </h5>
       <div className="grid grid-cols-8 gap-2">
         {rowColors.map(({ key, name }) => (
@@ -367,7 +382,7 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
                       ? `0 6px 20px ${colors[key as keyof Base24Colors]}60, 0 0 0 1px rgba(255,255,255,0.3)`
                       : `0 2px 8px ${colors[key as keyof Base24Colors]}30`,
                 }}
-                title={`${name} (${key}) - Click to adjust hue`}
+                title={`${name} (${key}) - Click to adjust hue individually. Currently ${Math.round(getCalculatedHue(key as AccentColorKey))}°`}
               >
                 <div className="absolute inset-0 rounded-lg border border-white border-opacity-20 pointer-events-none" />
 
@@ -393,7 +408,7 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
               <div
                 className="w-full h-10 rounded-lg border border-white border-opacity-10 relative"
                 style={{ backgroundColor: colors[key as keyof Base24Colors] }}
-                title={`${name} (${key}) - Display only`}
+                title={`${name} (${key}) - Automatically generated, not individually editable`}
               >
                 <div
                   className="absolute inset-0 rounded-lg opacity-30 pointer-events-none"
@@ -451,8 +466,9 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
 
       {!selectedColorKey && (
         <div className="text-center text-xs opacity-70" style={{ color: colors.base03 }}>
-          💡 Click any accent color (middle row) to fine-tune its hue. <br />
-          Slider 0 = Standard Base16 color spacing • Adjustments preserved when accent hue rotates
+          💡 Click any accent color (middle row) to fine-tune its hue individually. <br />
+          Slider at 0 = Standard Base16 color spacing • All adjustments are preserved when the
+          accent hue rotates
         </div>
       )}
     </div>

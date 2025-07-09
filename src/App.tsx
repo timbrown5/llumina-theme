@@ -146,10 +146,10 @@ const ThemeDropdown: React.FC<ThemeDropdownProps> = ({ activeTheme, onSelect, pa
     return (
       <div className="mb-6">
         <h3 style={{ color: pageColors.base0E }} className="text-center text-lg font-semibold mb-4">
-          🎯 Loading Themes...
+          🎯 Loading Available Themes...
         </h3>
         <div className="text-center" style={{ color: pageColors.base04 }}>
-          Discovering themes from directory...
+          Discovering themes from theme directory...
         </div>
       </div>
     );
@@ -171,6 +171,7 @@ const ThemeDropdown: React.FC<ThemeDropdownProps> = ({ activeTheme, onSelect, pa
             color: pageColors.base05,
           }}
           className="w-full px-4 py-3 rounded-lg text-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+          title="Choose a base theme as your starting point for customization"
         >
           {availableThemes.map((themeKey) => (
             <option
@@ -191,7 +192,7 @@ const ThemeDropdown: React.FC<ThemeDropdownProps> = ({ activeTheme, onSelect, pa
             {getThemeDescription(activeTheme)}
           </div>
           <div style={{ color: pageColors.base03 }} className="text-xs mt-1">
-            {availableThemes.length} themes available
+            {availableThemes.length} themes available for customization
           </div>
         </div>
       </div>
@@ -265,7 +266,7 @@ const Header: React.FC<HeaderProps> = ({ pageColors }) => (
       </span>
     </h1>
     <p style={{ color: pageColors.base04 }} className="mb-6">
-      Create beautiful Base24 themes for Neovim and terminals
+      Create beautiful Base24 themes for Neovim and terminals with real-time preview
     </p>
     <style>{`
       .gradient-text {
@@ -288,8 +289,8 @@ const Header: React.FC<HeaderProps> = ({ pageColors }) => (
 interface CustomizePanelProps {
   params: ThemeParams;
   updateParam: (key: keyof ThemeParams, value: number) => void;
-  resetToFlavor: () => void;
-  resetToTheme: () => void;
+  resetFlavor: () => void;
+  resetTheme: () => void;
   flavor: FlavorKey;
   pageColors: Base24Colors;
   onExpandChange: (expanded: boolean) => void;
@@ -299,8 +300,8 @@ interface CustomizePanelProps {
 const CustomizePanel: React.FC<CustomizePanelProps> = ({
   params,
   updateParam,
-  resetToFlavor,
-  resetToTheme,
+  resetFlavor,
+  resetTheme,
   flavor,
   pageColors,
   onExpandChange,
@@ -312,6 +313,14 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
     setIsExpanded(expanded);
     onExpandChange(expanded);
   };
+
+  // Get better reset button labels from ThemeManager
+  const resetLabels = themeLogic.getResetLabels
+    ? themeLogic.getResetLabels()
+    : {
+        flavor: `Reset to ${flavor.charAt(0).toUpperCase() + flavor.slice(1)} Flavor`,
+        theme: 'Reset Theme to Default',
+      };
 
   const getSliderProps = (configKey: ValidSliderKey) => {
     const generator = SLIDER_GENERATORS[configKey];
@@ -348,6 +357,7 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
         onClick={() => handleExpandChange(!isExpanded)}
         className="w-full flex items-center justify-between mb-5 text-left"
         style={{ color: pageColors.base0E }}
+        title={isExpanded ? 'Collapse customization panel' : 'Expand customization panel'}
       >
         <h3 className="text-lg font-semibold">🎨 Customize Colors</h3>
         <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
@@ -359,6 +369,9 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
             <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
               Background & UI Colors
             </h4>
+            <div style={{ color: pageColors.base04 }} className="text-xs mb-3">
+              Adjust the overall appearance of backgrounds, panels, and user interface elements
+            </div>
             {SLIDER_CONFIGS.main.map((config) => {
               const sliderProps = getSliderProps(config.key);
               return (
@@ -383,6 +396,9 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
             <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
               Syntax & Accent Colors
             </h4>
+            <div style={{ color: pageColors.base04 }} className="text-xs mb-3">
+              Control the colors used for syntax highlighting, keywords, and accent elements
+            </div>
             {SLIDER_CONFIGS.accent.map((config) => {
               const sliderProps = getSliderProps(config.key);
               return (
@@ -407,6 +423,9 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
             <h4 style={{ color: pageColors.base05 }} className="mb-3 text-sm font-medium">
               Comments & Subtle Text
             </h4>
+            <div style={{ color: pageColors.base04 }} className="text-xs mb-3">
+              Fine-tune the visibility and contrast of comments and secondary text
+            </div>
             {SLIDER_CONFIGS.comment.map((config) => {
               const sliderProps = getSliderProps(config.key);
               return (
@@ -432,7 +451,8 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
               Individual Color Adjustments
             </h4>
             <div style={{ color: pageColors.base04 }} className="text-xs mb-3">
-              Click accent colors to fine-tune their hue. Slider 0 = Standard Base16 spacing.
+              Click any accent color below to fine-tune its hue individually. Use keyboard arrows
+              for precise control.
             </div>
             <ColorPaletteEditor
               colors={themeLogic.colors}
@@ -451,26 +471,28 @@ const CustomizePanel: React.FC<CustomizePanelProps> = ({
             </h4>
             <div className="flex gap-3">
               <Button
-                onClick={resetToFlavor}
+                onClick={resetFlavor}
                 variant="secondary"
                 colors={pageColors}
                 className="flex-1 px-3 py-2 text-sm"
+                title="Reset current flavor to its default values, keeping other flavors unchanged"
               >
-                🔄 Reset to {flavor.charAt(0).toUpperCase() + flavor.slice(1)} Flavor
+                🔄 {resetLabels.flavor}
               </Button>
               <Button
-                onClick={resetToTheme}
+                onClick={resetTheme}
                 variant="primary"
                 colors={pageColors}
                 className="flex-1 px-3 py-2 text-sm"
+                title="Reset entire theme (all flavors) to default values"
               >
-                🏠 Reset to Theme Default
+                🏠 {resetLabels.theme}
               </Button>
             </div>
             <div style={{ color: pageColors.base04 }} className="text-xs mt-2 text-center">
-              Reset Flavor: Revert all sliders to current flavor defaults
+              <strong>Reset Flavor:</strong> Reverts current flavor to default settings
               <br />
-              Reset Theme: Clear all customizations and return to base theme + balanced flavor
+              <strong>Reset Theme:</strong> Clears all customizations for entire theme (all flavors)
             </div>
           </div>
         </>
@@ -505,7 +527,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ colors, activeTab, setActiv
       className="rounded-xl p-5"
     >
       <h3 style={{ color: colors.base0E }} className="mb-5 text-lg font-semibold">
-        👀 Theme Preview
+        👀 Live Theme Preview
       </h3>
 
       <div className="flex gap-1 mb-4 border-b pb-2" style={{ borderColor: colors.base02 }}>
@@ -517,6 +539,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ colors, activeTab, setActiv
             active={activeTab === tab.id}
             colors={colors}
             className="text-xs"
+            title={`Preview theme in ${tab.label} context`}
           >
             {tab.label}
           </Button>
@@ -555,7 +578,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
     className="rounded-xl p-5 text-center"
   >
     <h3 style={{ color: pageColors.base0E }} className="mb-4 text-lg font-semibold">
-      📦 Export Your Base24 Theme
+      📦 Export Your Custom Theme
     </h3>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
       <Button
@@ -563,6 +586,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         variant="gradient"
         colors={pageColors}
         className="px-4 py-3 text-sm font-bold"
+        title="Export as complete Neovim Lua theme file with syntax highlighting"
       >
         🎨 Neovim Theme
       </Button>
@@ -572,6 +596,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         variant="gradientWarm"
         colors={pageColors}
         className="px-4 py-3 text-sm font-bold"
+        title="Export as standard Base24 JSON format for universal editor compatibility"
       >
         📋 Base24 JSON
       </Button>
@@ -581,6 +606,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         variant="gradientRed"
         colors={pageColors}
         className="px-4 py-3 text-sm font-bold"
+        title="Export as Stylix configuration for NixOS system-wide theming"
       >
         ❄️ Stylix Theme
       </Button>
@@ -590,6 +616,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         variant="secondary"
         colors={pageColors}
         className="px-4 py-3 text-sm font-bold"
+        title="Export current theme parameters as JSON for sharing or backup"
       >
         📄 Theme JSON
       </Button>
@@ -601,6 +628,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         variant="primary"
         colors={pageColors}
         className="px-4 py-3 text-sm font-bold"
+        title="Export as installable theme definition file for theme libraries"
       >
         📁 Theme Definition JSON
       </Button>
@@ -614,26 +642,26 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         }}
         className="mb-4 py-2 px-4 rounded inline-block"
       >
-        ✅ Copied to clipboard!
+        ✅ Theme copied to clipboard successfully!
       </div>
     )}
 
     <div style={{ color: pageColors.base04 }} className="text-xs leading-relaxed">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-left">
         <div>
-          <strong>Neovim:</strong> Complete Lua theme file
+          <strong>Neovim:</strong> Complete Lua theme file ready for installation
         </div>
         <div>
-          <strong>Base24:</strong> Standard JSON for editors
+          <strong>Base24:</strong> Standard JSON format for most editors
         </div>
         <div>
-          <strong>Stylix:</strong> Nix system-wide theming
+          <strong>Stylix:</strong> Nix configuration for system-wide theming
         </div>
         <div>
-          <strong>Theme JSON:</strong> Loadable theme format
+          <strong>Theme JSON:</strong> Current parameters for sharing
         </div>
         <div>
-          <strong>Theme Definition:</strong> Installable theme file
+          <strong>Theme Definition:</strong> Installable theme package format
         </div>
       </div>
     </div>
@@ -686,8 +714,9 @@ const App: React.FC = () => {
           style={{ color: themeLogic.pageColors.base04 }}
           className="text-center text-xs max-w-lg mx-auto mb-8"
         >
-          <strong>Muted:</strong> Gentle, softer colors • <strong>Balanced:</strong> Harmonious
-          everyday use • <strong>Bold:</strong> High contrast, maximum readability
+          <strong>Muted:</strong> Gentle, softer colors for relaxed environments •{' '}
+          <strong>Balanced:</strong> Harmonious colors for everyday use • <strong>Bold:</strong>{' '}
+          High contrast colors for maximum readability
         </div>
 
         <div className="flex flex-col xl:flex-row gap-8 mb-8">
@@ -707,8 +736,8 @@ const App: React.FC = () => {
             <CustomizePanel
               params={themeLogic.getCurrentParams()}
               updateParam={themeLogic.updateParam}
-              resetToFlavor={themeLogic.resetToFlavor}
-              resetToTheme={themeLogic.resetToTheme}
+              resetFlavor={themeLogic.resetFlavor}
+              resetTheme={themeLogic.resetTheme}
               flavor={themeLogic.activeFlavor}
               pageColors={themeLogic.pageColors}
               onExpandChange={setIsCustomizePanelExpanded}

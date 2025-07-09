@@ -11,6 +11,7 @@
  * - Theme and flavor switching with customization preservation
  * - Individual color adjustment tracking and management
  * - State persistence across browser sessions
+ * - Force refresh detection and state clearing
  * - Export functionality for multiple output formats
  * - Graceful fallback handling for missing themes
  */
@@ -37,20 +38,23 @@ import type {
 interface PersistedState {
   activeTheme: ThemeKey;
   activeFlavor: FlavorKey;
-  currentParams: ThemeParams;
+  themeCustomizations: Record<ThemeKey, Record<FlavorKey, ThemeParams>>;
   version: string;
+  sessionId: string; // Add session tracking
 }
 
-const STATE_VERSION = '1.0';
+const STATE_VERSION = '2.0';
+const STORAGE_KEY = 'lumina_theme_state';
+const SESSION_KEY = 'lumina_session_id';
 
 export class ThemeManager {
   public activeTheme: ThemeKey = 'midnight';
   public activeFlavor: FlavorKey = 'balanced';
   public selectedColorKey: AccentColorKey | null = null;
 
-  private currentParams!: ThemeParams;
-  private baseThemeParams!: ThemeParams;
-  private flavorParams: any;
+  // Store customizations per theme per flavor
+  private themeCustomizations: Record<ThemeKey, Record<FlavorKey, ThemeParams>> = {};
+  private currentSessionId: string;
 
   /**
    * Initializes with either restored state or defaults.
@@ -58,21 +62,106 @@ export class ThemeManager {
   constructor() {
     console.log('ThemeManager: Constructor called');
 
-    if (this.restoreFromStorage()) {
+    // Generate session ID and check for force refresh
+    this.currentSessionId = this.generateSessionId();
+
+    if (this.isForceRefresh()) {
+      console.log('ThemeManager: Force refresh detected, clearing state');
+      this.clearStoredState();
+      this.initializeDefaults();
+    } else if (this.restoreFromStorage()) {
       console.log('ThemeManager: Restored from storage');
-      return;
+    } else {
+      console.log('ThemeManager: Using defaults');
+      this.initializeDefaults();
     }
 
-    console.log('ThemeManager: Using defaults');
+    // Store current session ID
+    this.storeSessionId();
+  }
+
+  /**
+   * Generates a unique session identifier.
+   * @returns Random session ID string
+   */
+  private generateSessionId(): string {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  }
+
+  /**
+   * Stores the current session ID for force refresh detection.
+   */
+  private storeSessionId() {
+    try {
+      sessionStorage.setItem(SESSION_KEY, this.currentSessionId);
+    } catch (error) {
+      console.warn('ThemeManager: Failed to store session ID:', error);
+    }
+  }
+
+  /**
+   * Detects if this is a force refresh by checking session storage.
+   * Force refresh clears sessionStorage but preserves localStorage.
+   * @returns True if this appears to be a force refresh
+   */
+  private isForceRefresh(): boolean {
+    try {
+      // Check if we have localStorage data but no sessionStorage
+      const hasLocalStorage = localStorage.getItem(STORAGE_KEY) !== null;
+      const hasSessionStorage = sessionStorage.getItem(SESSION_KEY) !== null;
+
+      // Force refresh scenario: localStorage exists but sessionStorage is cleared
+      const isForceRefresh = hasLocalStorage && !hasSessionStorage;
+
+      if (isForceRefresh) {
+        console.log(
+          'ThemeManager: Force refresh detected - localStorage exists but sessionStorage cleared'
+        );
+      }
+
+      return isForceRefresh;
+    } catch (error) {
+      console.warn('ThemeManager: Error checking for force refresh:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Initializes default state for all themes and flavors.
+   */
+  private initializeDefaults() {
     this.activeTheme = 'midnight';
     this.activeFlavor = 'balanced';
     this.selectedColorKey = null;
+    this.themeCustomizations = {};
 
-    const theme = new Theme('midnight');
-    this.currentParams = theme.getDefaultParams('balanced');
-    this.baseThemeParams = { ...this.currentParams };
-    this.flavorParams = {};
+    // Initialize all theme/flavor combinations with defaults
+    const themes = themeLoader.getAllThemeKeys();
+    const flavors = themeLoader.getAllFlavorKeys();
 
+    themes.forEach((themeKey) => {
+      this.themeCustomizations[themeKey] = {};
+      flavors.forEach((flavorKey) => {
+        const theme = new Theme(themeKey);
+        this.themeCustomizations[themeKey][flavorKey] = theme.getDefaultParams(flavorKey);
+      });
+    });
+
+    this.saveToStorage();
+  }
+
+  /**
+   * Gets current parameters for active theme/flavor combination.
+   */
+  private getCurrentThemeParams(): ThemeParams {
+    return this.themeCustomizations[this.activeTheme][this.activeFlavor];
+  }
+
+  /**
+   * Updates current parameters for active theme/flavor combination.
+   */
+  private setCurrentThemeParams(params: ThemeParams) {
+    this.themeCustomizations[this.activeTheme][this.activeFlavor] = { ...params };
     this.saveToStorage();
   }
 
@@ -84,17 +173,15 @@ export class ThemeManager {
       const state: PersistedState = {
         activeTheme: this.activeTheme,
         activeFlavor: this.activeFlavor,
-        currentParams: this.currentParams,
+        themeCustomizations: this.themeCustomizations,
         version: STATE_VERSION,
+        sessionId: this.currentSessionId,
       };
 
-      if (typeof window !== 'undefined') {
-        (window as any).__luminaThemeState = state;
-      }
-
-      console.log('ThemeManager: State saved', state);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      console.log('ThemeManager: State saved to localStorage');
     } catch (error) {
-      console.warn('ThemeManager: Failed to save state:', error);
+      console.warn('ThemeManager: Failed to save state to localStorage:', error);
     }
   }
 
@@ -104,34 +191,30 @@ export class ThemeManager {
    */
   private restoreFromStorage(): boolean {
     try {
-      if (typeof window === 'undefined') return false;
-
-      const state = (window as any).__luminaThemeState as PersistedState;
-      if (!state || state.version !== STATE_VERSION) {
-        console.log('ThemeManager: No valid state found or version mismatch');
+      const storedData = localStorage.getItem(STORAGE_KEY);
+      if (!storedData) {
+        console.log('ThemeManager: No stored state found');
         return false;
       }
 
+      const state = JSON.parse(storedData) as PersistedState;
+
       if (!this.isValidState(state)) {
-        console.warn('ThemeManager: Invalid state, using defaults');
+        console.warn('ThemeManager: Invalid or outdated state, using defaults');
+        localStorage.removeItem(STORAGE_KEY);
         return false;
       }
 
       this.activeTheme = state.activeTheme;
       this.activeFlavor = state.activeFlavor;
-      this.currentParams = { ...state.currentParams };
-      this.baseThemeParams = { ...state.currentParams };
+      this.themeCustomizations = state.themeCustomizations;
       this.selectedColorKey = null;
 
-      const flavor =
-        themeLoader.getThemeFlavor(this.activeTheme, this.activeFlavor) ||
-        themeLoader.getFlavor(this.activeFlavor);
-      this.flavorParams = { ...flavor };
-
-      console.log('ThemeManager: Successfully restored state');
+      console.log('ThemeManager: Successfully restored state from localStorage');
       return true;
     } catch (error) {
-      console.warn('ThemeManager: Failed to restore state:', error);
+      console.warn('ThemeManager: Failed to restore state from localStorage:', error);
+      localStorage.removeItem(STORAGE_KEY);
       return false;
     }
   }
@@ -142,7 +225,15 @@ export class ThemeManager {
    * @returns True if state is valid and safe to use
    */
   private isValidState(state: PersistedState): boolean {
-    if (!state.activeTheme || !state.activeFlavor || !state.currentParams) {
+    if (!state.version || state.version !== STATE_VERSION) {
+      console.warn(
+        `ThemeManager: Version mismatch. Expected ${STATE_VERSION}, got ${state.version}`
+      );
+      return false;
+    }
+
+    if (!state.activeTheme || !state.activeFlavor || !state.themeCustomizations) {
+      console.warn('ThemeManager: Missing required state properties');
       return false;
     }
 
@@ -150,52 +241,17 @@ export class ThemeManager {
     const validFlavors = themeLoader.getAllFlavorKeys();
 
     if (!validThemes.includes(state.activeTheme) || !validFlavors.includes(state.activeFlavor)) {
+      console.warn('ThemeManager: Invalid theme or flavor in stored state');
       return false;
     }
 
-    const required = [
-      'bgHue',
-      'bgSat',
-      'bgLight',
-      'accentHue',
-      'accentSat',
-      'accentLight',
-      'commentLight',
-    ];
-    return required.every(
-      (field) => typeof state.currentParams[field as keyof ThemeParams] === 'number'
-    );
-  }
-
-  /**
-   * Loads theme and flavor data, preserving user customizations.
-   * @param themeKey - The theme to load
-   * @param flavorKey - The flavor variation to load
-   */
-  private loadThemeAndFlavor(themeKey: ThemeKey, flavorKey: FlavorKey) {
-    const theme = themeLoader.getTheme(themeKey);
-    const flavor =
-      themeLoader.getThemeFlavor(themeKey, flavorKey) || themeLoader.getFlavor(flavorKey);
-
-    this.baseThemeParams = {
-      bgHue: theme.bgHue,
-      bgSat: theme.bgSat,
-      bgLight: theme.bgLight,
-      accentHue: flavor.accentHue,
-      accentSat: flavor.accentSat,
-      accentLight: flavor.accentLight,
-      commentLight: flavor.commentLight,
-      colorAdjustments: {},
-    };
-
-    this.flavorParams = { ...flavor };
-
-    if (this.currentParams?.colorAdjustments) {
-      this.baseThemeParams.colorAdjustments = { ...this.currentParams.colorAdjustments };
+    // Validate that customizations exist for current theme/flavor
+    if (!state.themeCustomizations[state.activeTheme]?.[state.activeFlavor]) {
+      console.warn('ThemeManager: Missing customizations for active theme/flavor');
+      return false;
     }
 
-    this.currentParams = { ...this.baseThemeParams };
-    this.saveToStorage();
+    return true;
   }
 
   /**
@@ -204,51 +260,44 @@ export class ThemeManager {
    */
   switchTheme(themeKey: ThemeKey) {
     console.log(`ThemeManager: Switching to theme ${themeKey}`);
+
+    // Initialize theme customizations if they don't exist
+    if (!this.themeCustomizations[themeKey]) {
+      this.themeCustomizations[themeKey] = {};
+      const flavors = themeLoader.getAllFlavorKeys();
+      flavors.forEach((flavorKey) => {
+        const theme = new Theme(themeKey);
+        this.themeCustomizations[themeKey][flavorKey] = theme.getDefaultParams(flavorKey);
+      });
+    }
+
     this.activeTheme = themeKey;
-    this.loadThemeAndFlavor(themeKey, this.activeFlavor);
+
+    // Initialize current flavor if it doesn't exist for this theme
+    if (!this.themeCustomizations[themeKey][this.activeFlavor]) {
+      const theme = new Theme(themeKey);
+      this.themeCustomizations[themeKey][this.activeFlavor] = theme.getDefaultParams(
+        this.activeFlavor
+      );
+    }
+
+    this.saveToStorage();
   }
 
   /**
    * Switches flavor while preserving all user customizations.
-   * Only updates saturation/lightness from flavor, keeps hue adjustments.
    * @param flavorKey - The flavor to switch to (muted/balanced/bold)
    */
   switchFlavor(flavorKey: FlavorKey) {
-    console.log(`ThemeManager: Switching to flavor ${flavorKey} (preserving customizations)`);
+    console.log(`ThemeManager: Switching to flavor ${flavorKey}`);
 
-    const userCustomizations = {
-      bgHue: this.currentParams.bgHue,
-      bgSat: this.currentParams.bgSat,
-      bgLight: this.currentParams.bgLight,
-      accentHue: this.currentParams.accentHue,
-      colorAdjustments: this.currentParams.colorAdjustments
-        ? { ...this.currentParams.colorAdjustments }
-        : {},
-    };
-
-    console.log('ThemeManager: Preserving customizations:', userCustomizations);
+    // Initialize flavor customizations if they don't exist
+    if (!this.themeCustomizations[this.activeTheme][flavorKey]) {
+      const theme = new Theme(this.activeTheme);
+      this.themeCustomizations[this.activeTheme][flavorKey] = theme.getDefaultParams(flavorKey);
+    }
 
     this.activeFlavor = flavorKey;
-
-    const flavor =
-      themeLoader.getThemeFlavor(this.activeTheme, flavorKey) || themeLoader.getFlavor(flavorKey);
-    this.flavorParams = { ...flavor };
-
-    this.currentParams = {
-      ...this.currentParams,
-      accentSat: flavor.accentSat,
-      accentLight: flavor.accentLight,
-      commentLight: flavor.commentLight,
-      bgHue: userCustomizations.bgHue,
-      bgSat: userCustomizations.bgSat,
-      bgLight: userCustomizations.bgLight,
-      accentHue: userCustomizations.accentHue,
-      colorAdjustments: userCustomizations.colorAdjustments,
-    };
-
-    this.baseThemeParams = { ...this.currentParams };
-
-    console.log('ThemeManager: After flavor switch:', this.currentParams);
     this.saveToStorage();
   }
 
@@ -257,8 +306,9 @@ export class ThemeManager {
    * @param value - New background hue (0-360)
    */
   updateBackgroundHue(value: number) {
-    this.currentParams.bgHue = value;
-    this.saveToStorage();
+    const params = this.getCurrentThemeParams();
+    params.bgHue = value;
+    this.setCurrentThemeParams(params);
   }
 
   /**
@@ -266,8 +316,9 @@ export class ThemeManager {
    * @param value - New background saturation (0-100)
    */
   updateBackgroundSat(value: number) {
-    this.currentParams.bgSat = value;
-    this.saveToStorage();
+    const params = this.getCurrentThemeParams();
+    params.bgSat = value;
+    this.setCurrentThemeParams(params);
   }
 
   /**
@@ -275,24 +326,25 @@ export class ThemeManager {
    * @param value - New background lightness (0-100)
    */
   updateBackgroundLight(value: number) {
-    this.currentParams.bgLight = value;
-    this.saveToStorage();
+    const params = this.getCurrentThemeParams();
+    params.bgLight = value;
+    this.setCurrentThemeParams(params);
   }
 
   /**
    * Updates main accent hue and rotates individual color adjustments proportionally.
-   * Maintains relative color relationships when shifting the entire palette.
    * @param value - New accent hue value (0-360)
    */
   updateAccentHue(value: number) {
-    const oldAccentHue = this.currentParams.accentHue;
+    const params = this.getCurrentThemeParams();
+    const oldAccentHue = params.accentHue;
     const hueChange = value - oldAccentHue;
 
-    this.currentParams.accentHue = value;
+    params.accentHue = value;
 
-    if (this.currentParams.colorAdjustments) {
-      Object.keys(this.currentParams.colorAdjustments).forEach((colorKey) => {
-        const adjustment = this.currentParams.colorAdjustments![colorKey as AccentColorKey];
+    if (params.colorAdjustments) {
+      Object.keys(params.colorAdjustments).forEach((colorKey) => {
+        const adjustment = params.colorAdjustments![colorKey as AccentColorKey];
         if (adjustment) {
           const currentAbsoluteHue = oldAccentHue + adjustment.hueOffset;
           let newAbsoluteHue = currentAbsoluteHue + hueChange;
@@ -310,7 +362,7 @@ export class ThemeManager {
       });
     }
 
-    this.saveToStorage();
+    this.setCurrentThemeParams(params);
   }
 
   /**
@@ -318,8 +370,9 @@ export class ThemeManager {
    * @param value - New accent saturation (0-100)
    */
   updateAccentSat(value: number) {
-    this.currentParams.accentSat = value;
-    this.saveToStorage();
+    const params = this.getCurrentThemeParams();
+    params.accentSat = value;
+    this.setCurrentThemeParams(params);
   }
 
   /**
@@ -327,8 +380,9 @@ export class ThemeManager {
    * @param value - New accent lightness (0-100)
    */
   updateAccentLight(value: number) {
-    this.currentParams.accentLight = value;
-    this.saveToStorage();
+    const params = this.getCurrentThemeParams();
+    params.accentLight = value;
+    this.setCurrentThemeParams(params);
   }
 
   /**
@@ -336,8 +390,9 @@ export class ThemeManager {
    * @param value - New comment lightness (0-100)
    */
   updateCommentLight(value: number) {
-    this.currentParams.commentLight = value;
-    this.saveToStorage();
+    const params = this.getCurrentThemeParams();
+    params.commentLight = value;
+    this.setCurrentThemeParams(params);
   }
 
   /**
@@ -354,7 +409,7 @@ export class ThemeManager {
    * @returns The hue offset in degrees
    */
   getColorAdjustment(colorKey: AccentColorKey): number {
-    return getUserAdjustment(this.currentParams, colorKey);
+    return getUserAdjustment(this.getCurrentThemeParams(), colorKey);
   }
 
   /**
@@ -372,12 +427,13 @@ export class ThemeManager {
    * @param hueOffset - The hue adjustment in degrees (-180 to +180)
    */
   updateColorAdjustment(colorKey: AccentColorKey, hueOffset: number) {
-    if (!this.currentParams.colorAdjustments) {
-      this.currentParams.colorAdjustments = {};
+    const params = this.getCurrentThemeParams();
+    if (!params.colorAdjustments) {
+      params.colorAdjustments = {};
     }
     const clampedOffset = Math.max(-180, Math.min(180, hueOffset));
-    this.currentParams.colorAdjustments[colorKey] = { hueOffset: clampedOffset };
-    this.saveToStorage();
+    params.colorAdjustments[colorKey] = { hueOffset: clampedOffset };
+    this.setCurrentThemeParams(params);
   }
 
   /**
@@ -385,9 +441,10 @@ export class ThemeManager {
    * @param colorKey - The accent color to reset
    */
   resetColorAdjustment(colorKey: AccentColorKey) {
-    if (this.currentParams.colorAdjustments?.[colorKey]) {
-      delete this.currentParams.colorAdjustments[colorKey];
-      this.saveToStorage();
+    const params = this.getCurrentThemeParams();
+    if (params.colorAdjustments?.[colorKey]) {
+      delete params.colorAdjustments[colorKey];
+      this.setCurrentThemeParams(params);
     }
   }
 
@@ -400,63 +457,36 @@ export class ThemeManager {
   }
 
   /**
-   * Resets everything to theme defaults with balanced flavor.
+   * Resets current theme/flavor combination to its default values.
    */
-  resetToTheme() {
-    console.log('RESET: Resetting to theme default');
+  resetFlavor() {
+    console.log(`RESET: Resetting ${this.activeTheme} ${this.activeFlavor} to defaults`);
 
-    this.activeFlavor = 'balanced';
     this.selectedColorKey = null;
+    const theme = new Theme(this.activeTheme);
+    const defaultParams = theme.getDefaultParams(this.activeFlavor);
 
-    const theme = themeLoader.getTheme(this.activeTheme);
-    const flavor =
-      themeLoader.getThemeFlavor(this.activeTheme, 'balanced') || themeLoader.getFlavor('balanced');
-
-    this.currentParams = {
-      bgHue: theme.bgHue,
-      bgSat: theme.bgSat,
-      bgLight: theme.bgLight,
-      accentHue: flavor.accentHue,
-      accentSat: flavor.accentSat,
-      accentLight: flavor.accentLight,
-      commentLight: flavor.commentLight,
-      colorAdjustments: {},
-    };
-
-    this.baseThemeParams = { ...this.currentParams };
-    this.flavorParams = { ...flavor };
+    this.themeCustomizations[this.activeTheme][this.activeFlavor] = { ...defaultParams };
     this.saveToStorage();
-    console.log('RESET: After - currentParams:', JSON.stringify(this.currentParams, null, 2));
   }
 
   /**
-   * Resets to current flavor defaults while keeping theme selection.
+   * Resets entire active theme (all flavors) to default values.
    */
-  resetToFlavor() {
-    console.log('RESET: Resetting to flavor default');
+  resetTheme() {
+    console.log(`RESET: Resetting entire ${this.activeTheme} theme to defaults`);
 
     this.selectedColorKey = null;
+    const theme = new Theme(this.activeTheme);
+    const flavors = themeLoader.getAllFlavorKeys();
 
-    const theme = themeLoader.getTheme(this.activeTheme);
-    const flavor =
-      themeLoader.getThemeFlavor(this.activeTheme, this.activeFlavor) ||
-      themeLoader.getFlavor(this.activeFlavor);
+    // Reset all flavors for this theme
+    this.themeCustomizations[this.activeTheme] = {};
+    flavors.forEach((flavorKey) => {
+      this.themeCustomizations[this.activeTheme][flavorKey] = theme.getDefaultParams(flavorKey);
+    });
 
-    this.currentParams = {
-      bgHue: theme.bgHue,
-      bgSat: theme.bgSat,
-      bgLight: theme.bgLight,
-      accentHue: flavor.accentHue,
-      accentSat: flavor.accentSat,
-      accentLight: flavor.accentLight,
-      commentLight: flavor.commentLight,
-      colorAdjustments: {},
-    };
-
-    this.baseThemeParams = { ...this.currentParams };
-    this.flavorParams = { ...flavor };
     this.saveToStorage();
-    console.log('RESET: After - currentParams:', JSON.stringify(this.currentParams, null, 2));
   }
 
   /**
@@ -464,9 +494,8 @@ export class ThemeManager {
    */
   clearStoredState() {
     console.log('ThemeManager: Clearing stored state');
-    if (typeof window !== 'undefined') {
-      delete (window as any).__luminaThemeState;
-    }
+    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
   }
 
   /**
@@ -474,17 +503,8 @@ export class ThemeManager {
    * @returns Complete 24-color Base24 scheme ready for use
    */
   getCurrentColors(): Base24Colors {
-    console.log('COLOR_DEBUG: Theme:', this.activeTheme);
-    console.log('COLOR_DEBUG: Flavor:', this.activeFlavor);
-    console.log('COLOR_DEBUG: AccentHue:', this.currentParams.accentHue);
-    console.log('COLOR_DEBUG: ColorAdjustments:', this.currentParams.colorAdjustments);
-
-    const colors = generateColors(this.currentParams, this.activeTheme);
-
-    console.log('COLOR_DEBUG: Generated base0A (yellow):', colors.base0A);
-    console.log('COLOR_DEBUG: Generated base0B (green):', colors.base0B);
-
-    return colors;
+    const params = this.getCurrentThemeParams();
+    return generateColors(params, this.activeTheme);
   }
 
   /**
@@ -492,7 +512,7 @@ export class ThemeManager {
    * @returns Current theme parameters
    */
   getCurrentParams(): ThemeParams {
-    return { ...this.currentParams };
+    return { ...this.getCurrentThemeParams() };
   }
 
   /**
@@ -520,17 +540,25 @@ export class ThemeManager {
   }
 
   /**
+   * Gets formatted reset button labels.
+   * @returns Object with flavor and theme reset button labels
+   */
+  getResetLabels() {
+    const themeInfo = this.getThemeInfo();
+    return {
+      flavor: `Reset ${themeInfo.name} ${this.activeFlavor.charAt(0).toUpperCase() + this.activeFlavor.slice(1)} Flavor`,
+      theme: `Reset Theme to Default`,
+    };
+  }
+
+  /**
    * Exports theme as Neovim Lua file.
    * @returns Neovim theme string
    */
   exportNeovim(): string {
     const themeInfo = this.getThemeInfo();
-    return exportNeovimTheme(
-      this.currentParams,
-      this.activeTheme,
-      themeInfo.name,
-      this.activeFlavor
-    );
+    const params = this.getCurrentThemeParams();
+    return exportNeovimTheme(params, this.activeTheme, themeInfo.name, this.activeFlavor);
   }
 
   /**
@@ -539,7 +567,8 @@ export class ThemeManager {
    */
   exportBase24(): string {
     const themeInfo = this.getThemeInfo();
-    return exportBase24Theme(this.currentParams, this.activeTheme, themeInfo.name);
+    const params = this.getCurrentThemeParams();
+    return exportBase24Theme(params, this.activeTheme, themeInfo.name);
   }
 
   /**
@@ -548,12 +577,8 @@ export class ThemeManager {
    */
   exportStylix(): string {
     const themeInfo = this.getThemeInfo();
-    return exportStylixTheme(
-      this.currentParams,
-      this.activeTheme,
-      themeInfo.name,
-      this.activeFlavor
-    );
+    const params = this.getCurrentThemeParams();
+    return exportStylixTheme(params, this.activeTheme, themeInfo.name, this.activeFlavor);
   }
 
   /**
@@ -562,8 +587,9 @@ export class ThemeManager {
    */
   exportThemeDefinition(): string {
     const themeInfo = this.getThemeInfo();
+    const params = this.getCurrentThemeParams();
     return exportThemeDefinition(
-      this.currentParams,
+      params,
       this.activeTheme,
       `Lumina ${themeInfo.name}`,
       themeInfo.tagline,
@@ -578,12 +604,10 @@ export class ThemeManager {
    */
   exportThemeJson(): string {
     const themeInfo = this.getThemeInfo();
-    return exportThemeParams(
-      this.currentParams,
-      this.activeTheme,
-      this.activeFlavor,
-      themeInfo,
-      this.flavorParams
-    );
+    const params = this.getCurrentThemeParams();
+    const flavor =
+      themeLoader.getThemeFlavor(this.activeTheme, this.activeFlavor) ||
+      themeLoader.getFlavor(this.activeFlavor);
+    return exportThemeParams(params, this.activeTheme, this.activeFlavor, themeInfo, flavor);
   }
 }

@@ -38,8 +38,8 @@ export interface ThemeLogic {
   resetColorAdjustment: (colorKey: AccentColorKey) => void;
   resetColorToDefault: (colorKey: AccentColorKey) => void;
 
-  resetToFlavor: () => void;
-  resetToTheme: () => void;
+  resetFlavor: () => void;
+  resetTheme: () => void;
 
   exportNvimTheme: () => void;
   exportTheme: () => void;
@@ -52,6 +52,7 @@ export interface ThemeLogic {
   getThemeOffset: (colorKey: AccentColorKey) => number;
   getAllThemeKeys: () => ThemeKey[];
   getAllFlavorKeys: () => FlavorKey[];
+  getResetLabels: () => { flavor: string; theme: string };
 }
 
 /**
@@ -243,20 +244,20 @@ export const useThemeLogic = (): ThemeLogic => {
   );
 
   /**
-   * Resets to current flavor defaults.
+   * Resets current flavor to defaults.
    */
-  const resetToFlavor = useCallback(() => {
-    console.log('useThemeLogic: Reset to flavor');
-    themeManager.resetToFlavor();
+  const resetFlavor = useCallback(() => {
+    console.log('useThemeLogic: Reset flavor');
+    themeManager.resetFlavor();
     triggerUpdate();
   }, [themeManager, triggerUpdate]);
 
   /**
-   * Resets to theme defaults.
+   * Resets entire theme to defaults.
    */
-  const resetToTheme = useCallback(() => {
-    console.log('useThemeLogic: Reset to theme');
-    themeManager.resetToTheme();
+  const resetTheme = useCallback(() => {
+    console.log('useThemeLogic: Reset theme');
+    themeManager.resetTheme();
     triggerUpdate();
   }, [themeManager, triggerUpdate]);
 
@@ -350,6 +351,14 @@ export const useThemeLogic = (): ThemeLogic => {
     return themeManager.getAllFlavorKeys();
   }, [themeManager]);
 
+  /**
+   * Gets formatted reset button labels.
+   * @returns Object with flavor and theme reset button labels
+   */
+  const getResetLabels = useCallback(() => {
+    return themeManager.getResetLabels();
+  }, [themeManager]);
+
   const colors = themeManager.getCurrentColors();
   const pageColors = colors;
 
@@ -373,8 +382,8 @@ export const useThemeLogic = (): ThemeLogic => {
     resetColorAdjustment,
     resetColorToDefault,
 
-    resetToFlavor,
-    resetToTheme,
+    resetFlavor,
+    resetTheme,
 
     exportNvimTheme,
     exportTheme,
@@ -387,5 +396,6 @@ export const useThemeLogic = (): ThemeLogic => {
     getThemeOffset,
     getAllThemeKeys,
     getAllFlavorKeys,
+    getResetLabels,
   };
 };
