@@ -315,7 +315,7 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
 
   const getCurrentOffset = (colorKey: AccentColorKey): number => {
     const themeOffset = getThemeOffset(colorKey);
-    const userAdjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+    const userAdjustment = params.accentOffsets?.[colorKey]?.hueOffset ?? 0;
 
     const totalOffset = themeOffset + userAdjustment;
 
@@ -330,7 +330,7 @@ const ColorPaletteEditor: React.FC<ColorPaletteEditorProps> = ({
     const baseHue = params.accentHue || 0;
     const standardOffset = Base24.getStandardOffset(colorKey);
     const themeOffset = getThemeOffset(colorKey);
-    const userAdjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+    const userAdjustment = params.accentOffsets?.[colorKey]?.hueOffset ?? 0;
 
     let finalHue = baseHue + standardOffset + themeOffset + userAdjustment;
     while (finalHue < 0) finalHue += 360;

@@ -23,8 +23,8 @@ interface ButtonProps {
   children: React.ReactNode;
   colors: Base24Colors;
   className?: string;
+  title?: string;
 }
-
 /**
  * Theme-aware button component with multiple visual variants.
  *
@@ -44,6 +44,7 @@ const Button: React.FC<ButtonProps> = ({
   children,
   colors,
   className = '',
+  title = '',
 }) => {
   const variants: Record<string, string> = {
     primary: active ? colors.base0D : colors.base01,
@@ -56,6 +57,7 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button
       onClick={onClick}
+      title={title}
       style={{
         background: variants[variant],
         border: `1px solid ${active ? (variant === 'primary' ? colors.base0D : colors.base0A) : colors.base02}`,

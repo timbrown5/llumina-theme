@@ -46,8 +46,8 @@
     },
     "bold": {
       "accentHue": 0,
-      "accentSat": 100,
-      "accentLight": 50,
+      "accentSat": 95,
+      "accentLight": 45,
       "commentLight": 60
     }
   }

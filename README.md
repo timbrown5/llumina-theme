@@ -2,6 +2,10 @@
 
 Create beautiful Base24 themes for Neovim and terminals with real-time preview and customization.
 
+## Documentation
+
+- [Design Document](DESIGN.md) - System architecture and parameter organization
+
 ## Features
 
 - 🎨 **4 Preset Themes**: Midnight, Twilight, Dawn, and Noon

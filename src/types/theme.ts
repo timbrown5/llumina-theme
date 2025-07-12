@@ -56,7 +56,7 @@ export interface ThemeParams {
   blueOffset?: number;
   purpleOffset?: number;
   pinkOffset?: number;
-  colorAdjustments?: {
+  accentOffsets?: {
     base08?: ColorAdjustment;
     base09?: ColorAdjustment;
     base0A?: ColorAdjustment;
@@ -108,4 +108,8 @@ export interface ThemeDefinition {
     pink: AccentOffsetDefinition;
   };
   flavors: Record<FlavorKey, FlavorData>;
+}
+
+export interface UserThemeCustomizations {
+  [flavorKey: string]: Partial<FlavorData>;
 }

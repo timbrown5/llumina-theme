@@ -3,51 +3,51 @@
   "tagline": "The warm pink and gold of sunrise",
   "inspirations": "Sunrise, new beginnings, opportunity, hope, fresh starts, awakening",
   "bgHue": 345,
-  "bgSat": 45,
-  "bgLight": 15,
+  "bgSat": 50,
+  "bgLight": 17,
   "accentOffsets": {
     "red": {
       "hue": -5
     },
     "orange": {
-      "hue": -8
+      "hue": -7
     },
     "yellow": {
-      "hue": -12
+      "hue": -10
     },
     "green": {
-      "hue": -18
+      "hue": -17
     },
     "cyan": {
-      "hue": -22
-    },
-    "blue": {
       "hue": -20
     },
+    "blue": {
+      "hue": 0
+    },
     "purple": {
-      "hue": -15
+      "hue": 0
     },
     "pink": {
-      "hue": -8
+      "hue": 0
     }
   },
   "flavors": {
     "muted": {
-      "accentHue": 10,
-      "accentSat": 70,
-      "accentLight": 68,
+      "accentHue": 0,
+      "accentSat": 85,
+      "accentLight": 75,
       "commentLight": 55
     },
     "balanced": {
-      "accentHue": 5,
-      "accentSat": 80,
-      "accentLight": 62,
+      "accentHue": 10,
+      "accentSat": 70,
+      "accentLight": 55,
       "commentLight": 55
     },
     "bold": {
       "accentHue": 0,
-      "accentSat": 90,
-      "accentLight": 55,
+      "accentSat": 100,
+      "accentLight": 50,
       "commentLight": 60
     }
   }

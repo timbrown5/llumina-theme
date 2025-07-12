@@ -101,7 +101,7 @@ export function getFinalHue(
   const baseHue = params.accentHue || 0;
   const standardOffset = getStandardOffset(colorKey);
   const themeOffset = getThemeOffset(themeKey, colorKey);
-  const userAdjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+  const userAdjustment = params.accentOffsets?.[colorKey]?.hueOffset ?? 0;
 
   let finalHue = baseHue + standardOffset + themeOffset + userAdjustment;
 
@@ -118,7 +118,7 @@ export function getFinalHue(
  * @returns User adjustment in degrees (default 0)
  */
 export function getUserAdjustment(params: ThemeParams, colorKey: AccentColorKey): number {
-  return params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
+  return params.accentOffsets?.[colorKey]?.hueOffset ?? 0;
 }
 
 /**
