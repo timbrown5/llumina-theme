@@ -14,14 +14,14 @@
  * - Legacy parameter mapping functions
  */
 
-import type { ColorGroup, Tab, SliderConfig, ThemeKey, FlavorKey } from '../types/index.ts';
-import { themeLoader } from '../utils/themeLoader.ts';
+import type { ColorGroup, Tab, SliderConfig, ThemeKey, FlavorKey } from '../types/index.js';
+import { themeLoader } from '../utils/themeLoader.js';
 import {
   generateHueGradient,
   generateSaturationGradient,
   generateLightnessGradient,
   hslToRgb,
-} from '../utils/colorUtils.ts';
+} from '../utils/colorUtils.js';
 
 // Re-export theme access functions from the loader
 export const getAllThemeKeys = () => themeLoader.getAllThemeKeys();

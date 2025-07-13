@@ -4,8 +4,8 @@
  * and other UI element configurations used throughout the application.
  */
 
-import type { Tab, SliderConfig, FlavorDescription } from '../types/ui.ts';
-import type { FlavorKey } from '../types/theme.ts';
+import type { Tab, SliderConfig, FlavorDescription } from '../types/ui.js';
+import type { FlavorKey } from '../types/theme.js';
 
 /**
  * Available preview tabs for theme visualization.

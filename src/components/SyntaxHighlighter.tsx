@@ -14,9 +14,10 @@
  * - Real-time Base24 theme integration with proper color mapping
  */
 
+import React from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import type { Base24Colors, TabKey } from '../types/index.ts';
+import type { Base24Colors, TabKey } from '../types/index.js';
 
 /**
  * Creates a custom syntax highlighting theme based on Base24 colors.

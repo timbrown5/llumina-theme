@@ -14,7 +14,8 @@
  * - Flexible content support (text, icons, mixed content)
  */
 
-import type { Base24Colors } from '../types/index.ts';
+import React from 'react';
+import type { Base24Colors } from '../types/index.js';
 
 interface ButtonProps {
   onClick: () => void;
@@ -25,6 +26,7 @@ interface ButtonProps {
   className?: string;
   title?: string;
 }
+
 /**
  * Theme-aware button component with multiple visual variants.
  *
@@ -35,6 +37,7 @@ interface ButtonProps {
  * @param props.children - Button content (text, icons, etc.)
  * @param props.colors - Base24 color scheme for theming
  * @param props.className - Additional CSS classes
+ * @param props.title - Tooltip text
  * @returns Styled button element
  */
 const Button: React.FC<ButtonProps> = ({
@@ -44,7 +47,7 @@ const Button: React.FC<ButtonProps> = ({
   children,
   colors,
   className = '',
-  title = '',
+  title,
 }) => {
   const variants: Record<string, string> = {
     primary: active ? colors.base0D : colors.base01,

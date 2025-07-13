@@ -15,8 +15,8 @@
  */
 
 import React from 'react';
-import { themeLoader } from '../utils/themeLoader.ts';
-import type { ThemeKey, Base24Colors } from '../types/index.ts';
+import { themeLoader } from '../utils/themeLoader.js';
+import type { ThemeKey, Base24Colors } from '../types/index.js';
 
 interface ThemeDropdownProps {
   activeTheme: ThemeKey;

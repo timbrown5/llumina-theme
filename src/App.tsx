@@ -15,14 +15,14 @@
  */
 
 import React from 'react';
-import { themeLoader } from './utils/themeLoader.ts';
-import { useThemeLogic } from './hooks/useThemeLogic.ts';
-import Button from './components/Button.tsx';
-import Slider from './components/Slider.tsx';
-import ColorPaletteEditor from './components/ColorPaletteEditor.tsx';
-import SyntaxPreview from './components/SyntaxHighlighter.tsx';
-import UIPreview from './components/UIPreview.tsx';
-import type { ThemeKey, FlavorKey, TabKey, Base24Colors, ThemeParams } from './types/index.ts';
+import { themeLoader } from './utils/themeLoader.js';
+import { useThemeLogic } from './hooks/useThemeLogic.js';
+import Button from './components/Button.js';
+import Slider from './components/Slider.js';
+import ColorPaletteEditor from './components/ColorPaletteEditor.js';
+import SyntaxPreview from './components/SyntaxHighlighter.js';
+import UIPreview from './components/UIPreview.js';
+import type { ThemeKey, FlavorKey, TabKey, Base24Colors, ThemeParams } from './types/index.js';
 
 const TABS = [
   { id: 'ui-preview', label: 'UI Preview' },

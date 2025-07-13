@@ -14,7 +14,8 @@
  * - Notification panels with various severity levels
  */
 
-import type { Base24Colors } from '../types/index.ts';
+import React from 'react';
+import type { Base24Colors } from '../types/index.js';
 
 interface UIPreviewProps {
   colors: Base24Colors;

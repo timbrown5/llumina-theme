@@ -15,8 +15,8 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ThemeManager } from '../classes/ThemeManager.ts';
-import type { ThemeKey, FlavorKey, TabKey, AccentColorKey, Base24Colors } from '../types/index.ts';
+import { ThemeManager } from '../classes/ThemeManager.js';
+import type { ThemeKey, FlavorKey, TabKey, AccentColorKey, Base24Colors } from '../types/index.js';
 
 export interface ThemeLogic {
   activeTheme: ThemeKey;

@@ -13,8 +13,8 @@
  * - Color generation with theme-specific adjustments
  * - Theme definition export and serialization
  */
-import { generateColors } from '../utils/colorUtils.ts';
-import type { ThemeKey, FlavorKey, ThemeParams, Base24Colors, BaseTheme } from '../types/index.ts';
+import { generateColors } from '../utils/colorUtils.js';
+import type { ThemeKey, FlavorKey, ThemeParams, Base24Colors, BaseTheme } from '../types/index.js';
 
 import midnightTheme from '../themes/midnight.json';
 import twilightTheme from '../themes/twilight.json';

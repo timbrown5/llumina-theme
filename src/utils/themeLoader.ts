@@ -14,7 +14,7 @@
  * - Asynchronous loading interface for UI components
  */
 
-import type { ThemeKey, FlavorKey, BaseTheme } from '../types/index.ts';
+import type { ThemeKey, FlavorKey, BaseTheme } from '../types/index.js';
 
 // Import all theme JSON files at build time
 import midnightTheme from '../themes/midnight.json';

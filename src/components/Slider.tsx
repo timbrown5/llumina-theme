@@ -14,9 +14,9 @@
  * - Support for hue, saturation, and lightness parameter types
  */
 
-import { useState, useEffect } from 'react';
-import { createGradientBg } from '../utils/colorUtils.ts';
-import type { SliderType, Base24Colors } from '../types/index.ts';
+import React, { useState, useEffect } from 'react';
+import { createGradientBg } from '../utils/colorUtils.js';
+import type { SliderType, Base24Colors } from '../types/index.js';
 
 interface SliderProps {
   label: string;

@@ -14,8 +14,8 @@
  * - Export utilities for Base24 JSON format
  */
 
-import type { Base24Colors, AccentColorKey } from '../types/index.ts';
-import { getStandardOffset } from '../utils/colorUtils.ts';
+import type { Base24Colors, AccentColorKey } from '../types/index.js';
+import { getStandardOffset } from '../utils/colorUtils.js';
 
 export interface ColorGroup {
   key: string;

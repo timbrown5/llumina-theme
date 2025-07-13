@@ -3,9 +3,9 @@
  * Converts theme parameters into complete Base24 color schemes using OKHSL color space.
  */
 
-import type { ThemeParams, Base24Colors, AccentColorKey, ThemeKey } from '../types/index.ts';
+import type { ThemeParams, Base24Colors, AccentColorKey, ThemeKey } from '../types/index.js';
 import { lab, formatHex } from 'culori';
-import { themeLoader } from './themeLoader.ts';
+import { themeLoader } from './themeLoader.js';
 
 /**
  * Standard Base16 hue offsets in degrees for color wheel distribution.
@@ -101,7 +101,7 @@ export function getFinalHue(
   const baseHue = params.accentHue || 0;
   const standardOffset = getStandardOffset(colorKey);
   const themeOffset = getThemeOffset(themeKey, colorKey);
-  const userAdjustment = params.accentOffsets?.[colorKey]?.hueOffset ?? 0;
+  const userAdjustment = params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
 
   let finalHue = baseHue + standardOffset + themeOffset + userAdjustment;
 
@@ -118,7 +118,7 @@ export function getFinalHue(
  * @returns User adjustment in degrees (default 0)
  */
 export function getUserAdjustment(params: ThemeParams, colorKey: AccentColorKey): number {
-  return params.accentOffsets?.[colorKey]?.hueOffset ?? 0;
+  return params.colorAdjustments?.[colorKey]?.hueOffset ?? 0;
 }
 
 /**

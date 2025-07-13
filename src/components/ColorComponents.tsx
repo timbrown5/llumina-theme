@@ -14,7 +14,8 @@
  * - Responsive layout adaptation for different screen sizes
  */
 
-import type { Base24Colors, ColorGroup } from '../types/index.ts';
+import React from 'react';
+import type { Base24Colors, ColorGroup } from '../types/index.js';
 
 interface ColorListProps {
   title: string;

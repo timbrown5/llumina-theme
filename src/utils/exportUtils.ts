@@ -20,14 +20,14 @@ import type {
   AccentColorKey,
   ThemeKey,
   BaseTheme,
-} from '../types/index.ts';
-import { Base24 } from '../classes/Base24.ts';
+} from '../types/index.js';
+import { Base24 } from '../classes/Base24.js';
 import {
   getFinalHue,
   generateColors,
   getThemeOffset,
   getUserAdjustment,
-} from '../utils/colorUtils.ts';
+} from '../utils/colorUtils.js';
 
 export const createNvimTheme = (
   colors: Base24Colors,
